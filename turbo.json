@@ -3,6 +3,7 @@
   "pipeline": {
     "db:generate": {
       "inputs": ["prisma/schema.prisma"],
+      "outputs": ["../../node_modules/.prisma/client"],
       "cache": false
     },
     "db:push": {
@@ -34,7 +35,23 @@
     "NEXTAUTH_SECRET",
     "NEXTAUTH_URL",
     "NODE_ENV",
-    "DISCORD_CLIENT_ID",
-    "DISCORD_CLIENT_SECRET"
+    "FACEBOOK_ID",
+    "FACEBOOK_SECRET",
+    "GOOGLE_ID",
+    "GOOGLE_SECRET",
+    "STRAVA_CLIENT_ID",
+    "STRAVA_CLIENT_SECRET",
+    "EMAIL_FROM",
+    "EMAIL_SERVER_USER",
+    "EMAIL_SERVER_PASSWORD",
+    "EMAIL_SERVER_HOST",
+    "EMAIL_SERVER_PORT",
+    "AWS_ACCESS_KEY_ID_WSC",
+    "AWS_SECRET_ACCESS_KEY_WSC",
+    "STREAMCHAT_API_KEY",
+    "STREAMCHAT_SECRET_KEY",
+    "NEXT_PUBLIC_MAPBOX_TOKEN",
+    "NEXT_PUBLIC_MAPQUEST_KEY",
+    "NEXT_PUBLIC_STREAMCHAT_API_KEY"
   ]
 }

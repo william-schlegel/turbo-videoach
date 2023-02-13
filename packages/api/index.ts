@@ -1,2 +1,3 @@
 export { appRouter, type AppRouter } from "./src/root";
-export { createTRPCContext } from "./src/trpc";
+// export { type GetNotificationByIdReturn } from "./src/router/notification";
+export { createInnerTRPCContext, createTRPCContext } from "./src/trpc";

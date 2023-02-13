@@ -1,10 +1,18 @@
-import { createNextApiHandler } from "@trpc/server/adapters/next";
 import { appRouter, createTRPCContext } from "@acme/api";
+import { createNextApiHandler } from "@trpc/server/adapters/next";
+import { env } from "~/env.mjs";
 
 // export API handler
 export default createNextApiHandler({
   router: appRouter,
   createContext: createTRPCContext,
+  onError:
+    env.NODE_ENV === "development"
+      ? ({ path, error }) => {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          console.error(`❌ tRPC failed on ${path}: ${error}`);
+        }
+      : undefined,
 });
 
 // If you need to enable cors, you can do so like this:

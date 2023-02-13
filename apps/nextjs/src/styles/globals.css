@@ -1,3 +1,89 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  h1 {
+    @apply text-primary space-x-2 py-4 text-4xl font-bold;
+  }
+  h2 {
+    @apply text-primary space-x-2 py-3 text-3xl font-bold;
+  }
+  h3 {
+    @apply text-secondary space-x-2 py-3 text-2xl font-semibold;
+  }
+  h4 {
+    @apply text-secondary space-x-2 py-2 text-xl font-semibold;
+  }
+  label {
+    @apply label-text label text-primary font-semibold;
+  }
+
+  label.required::after {
+    content: "*";
+    color: red;
+    font-size: 0.8em;
+    padding-inline-start: 0.25em;
+    align-self: start;
+  }
+
+  /*label:has(+ input["required"])::after*/
+
+  textarea {
+    @apply textarea-bordered textarea w-full;
+  }
+  select {
+    @apply select-bordered select w-full;
+  }
+  .pill {
+    @apply border-neutral bg-base-200 text-base-content flex flex-wrap items-center gap-2 border p-[0.5rem];
+    border-radius: var(--rounded-btn, 0.5rem);
+  }
+
+  .pill-xs {
+    @apply px-[0.25rem] py-[0.125rem] text-xs;
+  }
+}
+
+body {
+  @apply scroll-smooth;
+}
+
+.bg-gradient-home-hero {
+  --hero-bg-opacity: 0.3;
+  object-fit: fill;
+  background: linear-gradient(
+        hsl(var(--b1) / var(--hero-bg-opacity)),
+        hsl(var(--b1) / var(--hero-bg-opacity))
+      )
+      0px 0px / 100% 100% no-repeat no-repeat,
+    radial-gradient(
+        circle at 50% 50%,
+        hsl(var(--s)) 0%,
+        rgba(0, 0, 0, 0) 65%,
+        rgba(0, 0, 0, 0) 100%
+      ) -35% -65% / 100% 150% no-repeat no-repeat,
+    radial-gradient(
+        ellipse at 50% 50%,
+        hsl(var(--a)) 0%,
+        rgba(0, 0, 0, 0) 65%,
+        rgba(0, 0, 0, 0) 100%
+      )
+      25% 25% / 110% 110% no-repeat no-repeat,
+    conic-gradient(
+        from 30deg at 0% 0%,
+        hsl(var(--a)) 0%,
+        hsl(var(--er)) 45%,
+        rgba(0, 0, 0, 0) 70%
+      )
+      0px 0px / 100% 100% no-repeat no-repeat,
+    linear-gradient(-6deg, hsl(var(--in)) 0%, 40%, hsl(var(--in)) 100%) 0px 0px /
+      100% 100% no-repeat no-repeat;
+}
+
+.image-home-hero {
+  mask-image: url(/images/image-home-mask.svg);
+  mask-repeat: no-repeat;
+  -webkit-mask-image: url(/images/image-home-mask.svg);
+  -webkit-mask-repeat: no-repeat;
+}

@@ -1,65 +1,816 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+//       Type | Maximum length
+// -----------+-------------------------------------
+//   TINYTEXT |           255 (2 8−1) bytes
+//       TEXT |        65,535 (216−1) bytes = 64 KiB
+// MEDIUMTEXT |    16,777,215 (224−1) bytes = 16 MiB
+//   LONGTEXT | 4,294,967,295 (232−1) bytes =  4 GiB
+
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
+  output          = "../../../node_modules/.prisma/client"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  url          = env("DATABASE_URL")
+  provider     = "mysql"
+  // provider = "postgresql"
+  relationMode = "prisma"
 }
 
-model Post {
-    id      String @id @default(cuid())
-    title   String
-    content String
-}
+// ----------------------------------------------------------------------------------------------
 
-// NextAuth.js Models
-// NOTE: When using postgresql, mysql or sqlserver, 
-// uncomment the @db.Text annotations below
-// @see https://next-auth.js.org/schemas/models
+//                             AUTHENTIFICATION - USER
+
+// ----------------------------------------------------------------------------------------------
+
+// Necessary for Next auth
 model Account {
-    id                String  @id @default(cuid())
-    userId            String
-    type              String
-    provider          String
-    providerAccountId String
-    refresh_token     String? // @db.Text
-    access_token      String? // @db.Text
-    expires_at        Int?
-    token_type        String?
-    scope             String?
-    id_token          String? // @db.Text
-    session_state     String?
-    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  athlete           Json? // for strava connection
 
-    @@unique([provider, providerAccountId])
+  @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum Role {
+  MEMBER
+  COACH
+  MANAGER
+  MANAGER_COACH
+  ADMIN
 }
 
 model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
+  id                String             @id @default(cuid())
+  name              String?
+  email             String?            @unique
+  password          String?
+  emailVerified     DateTime?
+  image             String?
+  profileImageId    String?
+  accounts          Account[]
+  sessions          Session[]
+  role              Role               @default(MEMBER)
+  pricingId         String?
+  pricing           Pricing?           @relation(fields: [pricingId], references: [id])
+  monthlyPayment    Boolean            @default(false)
+  trialUntil        DateTime?
+  paiements         Paiement[]
+  dueDate           DateTime?
+  cancelationDate   DateTime?
+  documents         UserDocument[]     @relation("documents")
+  phone             String?
+  address           String?            @db.Text
+  memberData        UserMember?        @relation("member-user")
+  coachData         UserCoach?         @relation("coach-user")
+  managerData       UserManager?       @relation("manager-user")
+  reservations      Reservation[]
+  chatToken         String?
+  notificationsTo   UserNotification[] @relation("user-to")
+  notificationsFrom UserNotification[] @relation("user-from")
+
+  @@index([pricingId])
+}
+
+model UserCoach {
+  id                 String             @id @default(cuid())
+  userId             String             @unique
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade, name: "coach-user")
+  publicName         String?
+  description        String?            @db.Text
+  aboutMe            String?            @db.MediumText
+  activityGroups     ActivityGroup[]
+  coachingPrices     CoachingPrice[]
+  coachingActivities CoachingActivity[]
+  searchAddress      String?
+  latitude           Float              @default(48.8583701)
+  longitude          Float              @default(2.2944813)
+  range              Float              @default(10)
+  facebookLink       String?
+  twitterLink        String?
+  youtubeLink        String?
+  instagramLink      String?
+  certifications     Certification[]
+  rating             Float              @default(0)
+  pageStyle          String             @default("light")
+  page               Page?
+  planningActivities PlanningActivity[]
+  plannings          Planning[]
+  clubs              Club[]             @relation("coach-club")
+  marketPlaceOffers  CoachMarketPlace[]
+
+  @@index([userId])
+}
+
+model UserMember {
+  id                    String         @id @default(cuid())
+  userId                String         @unique
+  user                  User           @relation(fields: [userId], references: [id], onDelete: Cascade, name: "member-user")
+  clubs                 Club[]         @relation("member-club")
+  subscriptions         Subscription[]
+  inscriptionFeeOffered Boolean        @default(false)
+  cancelationFeeOffered Boolean        @default(false)
+  subscriptionStart     DateTime?
+}
+
+model UserManager {
+  id           String @id @default(cuid())
+  userId       String @unique
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade, name: "manager-user")
+  managedClubs Club[] @relation("manager-club")
+}
+
+model Paiement {
+  id             String       @id @default(cuid())
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+  amount         Float
+  paiementDate   DateTime
+
+  @@index([userId])
+  @@index([subscriptionId])
 }
 
 model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
+  identifier String
+  token      String   @unique
+  expires    DateTime
 
-    @@unique([identifier, token])
+  @@unique([identifier, token])
+}
+
+enum UserDocumentType {
+  DOCUMENT
+  IMAGE
+  PROFILE_IMAGE
+  PAGE_IMAGE
+  CERTIFICATION
+  MEDICAL_CERTIFICAT
+}
+
+model UserDocument {
+  id                 String               @id @default(cuid())
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade, name: "documents")
+  userId             String
+  documentType       UserDocumentType     @default(DOCUMENT)
+  fileType           String
+  fileName           String?
+  certification      Certification?
+  pageSectionElement PageSectionElement[]
+  club               Club?
+  event              Event?
+
+  @@index([userId])
+}
+
+enum NotificationType {
+  SEARCH_COACH
+  SEARCH_CLUB
+  COACH_ACCEPT
+  COACH_REFUSE
+  CLUB_ACCEPT
+  CLUB_REFUSE
+  NEW_MESSAGE
+  NEW_SUBSCRIPTION
+  NEW_REQUEST
+  SUBSCRIPTION_VALIDATED
+  SUBSCRIPTION_REJECTED
+  REQUEST_VALIDATED
+  REQUEST_REJECTED
+}
+
+model UserNotification {
+  id                 String           @id @default(cuid())
+  type               NotificationType
+  userTo             User             @relation(fields: [userToId], references: [id], name: "user-to")
+  userToId           String
+  userFromId         String
+  userFrom           User             @relation(fields: [userFromId], references: [id], name: "user-from")
+  message            String           @db.Text
+  viewDate           DateTime?
+  date               DateTime         @default(now())
+  data               Json?
+  answered           DateTime?
+  answer             String?
+  linkedNotification String? // if the notification is answering another one
+
+  @@index([userToId])
+  @@index([userFromId])
+}
+
+// ----------------------------------------------------------------------------------------------
+
+//                             CLUB MANAGEMENT
+
+// ----------------------------------------------------------------------------------------------
+
+model Club {
+  id                 String             @id @default(cuid())
+  name               String
+  address            String             @db.Text
+  managerId          String
+  manager            UserManager        @relation(fields: [managerId], references: [userId], onDelete: Cascade, name: "manager-club")
+  sites              Site[]
+  activities         Activity[]
+  members            UserMember[]       @relation("member-club")
+  coachs             UserCoach[]        @relation("coach-club")
+  calendars          OpeningCalendar[]
+  pages              Page[]
+  pageStyle          String             @default("light")
+  plannings          Planning[]
+  logoId             String?            @unique
+  logo               UserDocument?      @relation(fields: [logoId], references: [id])
+  subscriptions      Subscription[]
+  events             Event[]
+  marketPlaceSearchs CoachMarketPlace[]
+
+  @@index([managerId])
+  @@index([logoId])
+}
+
+model Site {
+  id                 String             @id @default(cuid())
+  name               String
+  address            String             @db.Text
+  searchAddress      String?
+  latitude           Float              @default(48.8583701)
+  longitude          Float              @default(2.2944813)
+  clubId             String
+  club               Club               @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  rooms              Room[]
+  openWithClub       Boolean            @default(true)
+  calendars          OpeningCalendar[]
+  plannings          Planning[]
+  planningActivities PlanningActivity[]
+  subscriptions      Subscription[]
+  marketPlaceSearchs CoachMarketPlace[]
+
+  @@index([clubId])
+}
+
+enum RoomReservation {
+  NONE
+  POSSIBLE
+  MANDATORY
+}
+
+model Room {
+  id                 String             @id @default(cuid())
+  name               String
+  reservation        RoomReservation    @default(NONE)
+  capacity           Int
+  unavailable        Boolean            @default(false)
+  openWithClub       Boolean            @default(true)
+  openWithSite       Boolean            @default(true)
+  calendars          OpeningCalendar[]
+  siteId             String
+  site               Site               @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  // room possible affectation for activity
+  activities         Activity[]         @relation("rooms-activities")
+  plannings          Planning[]
+  planningActivities PlanningActivity[]
+  subscriptions      Subscription[]
+  reservations       Reservation[]
+
+  @@index([siteId])
+}
+
+enum SubscriptionMode {
+  ALL_INCLUSIVE
+  ACTIVITY_GROUP
+  ACTIVITY
+  DAY
+  COURSE
+}
+
+enum SubscriptionRestriction {
+  CLUB
+  SITE
+  ROOM
+}
+
+model Subscription {
+  id              String                  @id @default(cuid())
+  name            String
+  mode            SubscriptionMode        @default(ALL_INCLUSIVE)
+  restriction     SubscriptionRestriction @default(CLUB)
+  highlight       String
+  description     String                  @db.Text
+  startDate       DateTime
+  deletionDate    DateTime?
+  monthly         Float                   @default(0)
+  yearly          Float                   @default(0)
+  cancelationFee  Float                   @default(0)
+  inscriptionFee  Float                   @default(0)
+  activitieGroups ActivityGroup[]
+  activities      Activity[]
+  day             DayName?
+  users           UserMember[]
+  clubId          String
+  club            Club                    @relation(fields: [clubId], references: [id], onUpdate: NoAction)
+  sites           Site[]
+  rooms           Room[]
+  paiements       Paiement[]
+
+  @@index([clubId])
+}
+
+model Event {
+  id            String        @id @default(cuid())
+  clubId        String
+  club          Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  name          String
+  brief         String        @db.MediumText
+  description   String        @db.Text
+  pageId        String?
+  page          Page?
+  startDate     DateTime
+  endDate       DateTime
+  startDisplay  DateTime      @default(now())
+  endDisplay    DateTime
+  bannerText    String
+  cancelled     Boolean
+  documentId    String?       @unique
+  document      UserDocument? @relation(fields: [documentId], references: [id])
+  price         Float
+  free          Boolean
+  address       String
+  searchAddress String?
+  latitude      Float         @default(48.8583701)
+  longitude     Float         @default(2.2944813)
+
+  @@index([pageId])
+  @@index([clubId])
+}
+
+// ----------------------------------------------------------------------------------------------
+
+//                             COACH OFFERS
+
+// ----------------------------------------------------------------------------------------------
+
+enum CoachingLevelList {
+  ALL
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+  COMPETITOR
+  PROFESSIONAL
+}
+
+model CoachingLevel {
+  id      String            @id @default(cuid())
+  offerId String
+  offer   CoachingPrice     @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  level   CoachingLevelList
+
+  @@index([offerId])
+}
+
+enum CoachingTarget {
+  INDIVIDUAL
+  COMPANY
+}
+
+model CoachingPrice {
+  id              String              @id @default(cuid())
+  name            String
+  target          CoachingTarget      @default(INDIVIDUAL)
+  coachingLevel   CoachingLevel[]
+  excludingTaxes  Boolean             @default(false)
+  description     String              @db.Text
+  startDate       DateTime
+  physical        Boolean             @default(false)
+  inHouse         Boolean             @default(false)
+  myPlace         Boolean             @default(false)
+  publicPlace     Boolean             @default(false)
+  perHourPhysical Float               @default(0)
+  perDayPhysical  Float               @default(0)
+  travelFee       Float               @default(0)
+  travelLimit     Int                 @default(0)
+  webcam          Boolean
+  perHourWebcam   Float               @default(0)
+  perDayWebcam    Float               @default(0)
+  freeHours       Int                 @default(0)
+  coachId         String
+  coach           UserCoach           @relation(fields: [coachId], references: [userId], onDelete: Cascade)
+  packs           CoachingPricePack[]
+
+  @@index([coachId])
+}
+
+enum PackMode {
+  PHYSICAL
+  WEBCAM
+}
+
+model CoachingPricePack {
+  id              String        @id @default(cuid())
+  nbHours         Int           @default(1)
+  packPrice       Float         @default(0)
+  mode            PackMode      @default(PHYSICAL)
+  coachingPriceId String
+  coachingPrice   CoachingPrice @relation(fields: [coachingPriceId], references: [id], onDelete: Cascade)
+
+  @@index([coachingPriceId])
+}
+
+// ----------------------------------------------------------------------------------------------
+
+//                             ACTIVITIES
+
+// ----------------------------------------------------------------------------------------------
+
+model ActivityGroup {
+  id                   String                @id @default(cuid())
+  name                 String
+  default              Boolean               @default(false)
+  activities           Activity[]
+  coach                UserCoach?            @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  coachId              String?
+  certifications       Certification[]
+  certificationModules CertificationModule[]
+  subscriptions        Subscription[]
+  marketPlaceSearchs   CoachMarketPlace[]
+
+  @@index([coachId])
+}
+
+model Activity {
+  id                  String             @id @default(cuid())
+  name                String
+  groupId             String
+  group               ActivityGroup      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  clubId              String
+  club                Club               @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  rooms               Room[]             @relation(name: "rooms-activities")
+  planningActivities  PlanningActivity[]
+  subscriptions       Subscription[]
+  noCalendar          Boolean            @default(false)
+  reservationDuration Int                @default(60)
+  reservations        Reservation[]
+
+  @@index([groupId])
+  @@index([clubId])
+}
+
+model CoachingActivity {
+  id      String    @id @default(cuid())
+  name    String
+  coachId String
+  coach   UserCoach @relation(fields: [coachId], references: [userId], onDelete: Cascade)
+
+  @@index([coachId])
+}
+
+model OpeningCalendar {
+  id          String           @id @default(cuid())
+  startDate   DateTime         @default(now())
+  openingTime DayOpeningTime[]
+  rooms       Room[]
+  clubs       Club[]
+  sites       Site[]
+}
+
+enum DayName {
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+}
+
+model DayOpeningTime {
+  id           String            @id @default(cuid())
+  name         DayName
+  wholeDay     Boolean           @default(false)
+  closed       Boolean           @default(false)
+  workingHours OpeningTime[]
+  calendar     OpeningCalendar[]
+}
+
+model OpeningTime {
+  id      String           @id @default(cuid())
+  opening String // format HH:MM
+  closing String // format HH:MM
+  day     DayOpeningTime[]
+}
+
+// ----------------------------------------------------------------------------------------------
+
+//                             PRICING
+
+// ----------------------------------------------------------------------------------------------
+
+enum Feature {
+  COACH_OFFER
+  COACH_OFFER_COMPANY
+  COACH_CERTIFICATION
+  COACH_MEETING
+  COACH_MARKET_PLACE
+  MANAGER_MULTI_CLUB
+  MANAGER_MULTI_SITE
+  MANAGER_ROOM
+  MANAGER_EVENT
+  MANAGER_PLANNING
+  MANAGER_COACH
+  MANAGER_MARKET_PLACE
+  MANAGER_SHOP
+  MANAGER_EMPLOYEES
+}
+
+model Pricing {
+  id           String           @id @default(cuid())
+  roleTarget   Role
+  title        String
+  description  String           @db.Text
+  free         Boolean?         @default(false)
+  highlighted  Boolean?         @default(false)
+  monthly      Float?           @default(0)
+  yearly       Float?           @default(0)
+  options      PricingOption[]
+  features     PricingFeature[]
+  deleted      Boolean?         @default(false)
+  deletionDate DateTime?
+  users        User[]
+}
+
+model PricingOption {
+  id        String  @id @default(cuid())
+  name      String  @db.Text
+  weight    Int // for sorting
+  pricingId String
+  pricing   Pricing @relation(fields: [pricingId], references: [id], onDelete: Cascade)
+
+  @@index([pricingId])
+}
+
+model PricingFeature {
+  id        String  @id @default(cuid())
+  feature   Feature
+  pricingId String
+  pricing   Pricing @relation(fields: [pricingId], references: [id], onDelete: Cascade)
+
+  @@index([pricingId])
+}
+
+// ----------------------------------------------------------------------------------------------
+
+//                             CERTIFICATION
+
+// ----------------------------------------------------------------------------------------------
+
+model CertificationGroup {
+  id      String                @id @default(cuid())
+  name    String
+  modules CertificationModule[]
+}
+
+model CertificationModule {
+  id                   String             @id @default(cuid())
+  name                 String
+  certificationGroupId String
+  certificationGroup   CertificationGroup @relation(fields: [certificationGroupId], references: [id], onDelete: Cascade)
+  activityGroups       ActivityGroup[]
+  certifications       Certification[]
+
+  @@index([certificationGroupId])
+}
+
+model Certification {
+  id                 String                @id @default(cuid())
+  name               String
+  obtainedIn         DateTime
+  documentId         String?               @unique
+  document           UserDocument?         @relation(fields: [documentId], references: [id])
+  coach              UserCoach             @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  coachId            String
+  modules            CertificationModule[]
+  activityGroups     ActivityGroup[]
+  manualModule       String?
+  marketPlaceSearchs CoachMarketPlace[]
+
+  @@index([coachId])
+}
+
+// ----------------------------------------------------------------------------------------------
+
+//                             PAGES
+
+// ----------------------------------------------------------------------------------------------
+
+enum PageTarget {
+  HOME
+  ACTIVITIES
+  OFFERS
+  TEAM
+  PLANNING
+  VIDEOS
+  EVENTS
+}
+
+enum PageSectionModel {
+  HERO
+  TITLE
+  PLANNINGS
+  ACTIVITY_GROUPS
+  ACTIVITIES
+  OFFERS
+  VIDEO
+  LOCATION
+  SOCIAL
+  TEAMMATES
+  CONTACT
+  FOOTER
+}
+
+enum PageSectionElementType {
+  HERO_CONTENT
+  CTA
+  CARD
+  OPENING_TIME
+  MAP
+  FEATURE
+  BUTTON
+  NEWSLETTER
+  OPTION
+}
+
+model PageSectionElement {
+  id          String                  @id @default(cuid())
+  images      UserDocument[]
+  title       String?
+  subTitle    String?
+  elementType PageSectionElementType?
+  content     String?                 @db.Text
+  link        String?
+  pageId      String?
+  pageSection PageSectionModel?
+  sectionId   String
+  section     PageSection             @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  optionValue String?
+
+  @@index([sectionId])
+}
+
+model PageSection {
+  id       String               @id @default(cuid())
+  model    PageSectionModel
+  title    String?
+  subTitle String?
+  elements PageSectionElement[]
+  pageId   String
+  page     Page                 @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId])
+}
+
+model Page {
+  id        String        @id @default(cuid())
+  name      String
+  target    PageTarget    @default(HOME)
+  sections  PageSection[]
+  clubId    String?
+  club      Club?         @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  coachId   String?       @unique
+  coach     UserCoach?    @relation(fields: [coachId], references: [userId], onDelete: Cascade)
+  published Boolean       @default(false)
+  eventId   String?       @unique
+  event     Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([clubId])
+  @@index([coachId])
+  @@index([eventId])
+}
+
+// ----------------------------------------------------------------------------------------------
+
+//                             PLANNING
+
+// ----------------------------------------------------------------------------------------------
+
+model Planning {
+  id                 String             @id @default(cuid())
+  name               String?
+  clubId             String
+  club               Club               @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  siteId             String?
+  site               Site?              @relation(fields: [siteId], references: [id])
+  roomId             String?
+  room               Room?              @relation(fields: [roomId], references: [id])
+  startDate          DateTime           @default(now())
+  endDate            DateTime?
+  planningActivities PlanningActivity[]
+  coachId            String?
+  coach              UserCoach?         @relation(fields: [coachId], references: [userId])
+
+  @@index([clubId])
+  @@index([siteId])
+  @@index([roomId])
+  @@index([coachId])
+}
+
+model PlanningActivity {
+  id           String        @id @default(cuid())
+  planningId   String
+  planning     Planning      @relation(fields: [planningId], references: [id], onDelete: Cascade)
+  activityId   String
+  activity     Activity      @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  siteId       String
+  site         Site          @relation(fields: [siteId], references: [id])
+  roomId       String?
+  room         Room?         @relation(fields: [roomId], references: [id])
+  day          DayName
+  startTime    String
+  duration     Int
+  coachId      String?
+  coach        UserCoach?    @relation(fields: [coachId], references: [userId])
+  reservations Reservation[]
+
+  @@index([planningId])
+  @@index([activityId])
+  @@index([siteId])
+  @@index([roomId])
+  @@index([coachId])
+}
+
+model Reservation {
+  id                 String            @id @default(cuid())
+  planningActivityId String?
+  planningActivity   PlanningActivity? @relation(fields: [planningActivityId], references: [id], onDelete: Cascade)
+  activityId         String?
+  activity           Activity?         @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  activitySlot       Int?
+  date               DateTime
+  roomId             String?
+  room               Room?             @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId             String
+  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reservationDate    DateTime          @default(now())
+
+  @@index([roomId])
+  @@index([activityId])
+  @@index([planningActivityId])
+  @@index([userId])
+}
+
+// ----------------------------------------------------------------------------------------------
+
+//                             COACH MARKETPLACE
+
+// ----------------------------------------------------------------------------------------------
+
+enum CoachMarketPlaceType {
+  SEARCH
+  OFFER
+}
+
+model CoachMarketPlace {
+  id              String               @id @default(cuid())
+  type            CoachMarketPlaceType
+  clubId          String?
+  club            Club?                @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  coachId         String?
+  coach           UserCoach?           @relation(fields: [coachId], references: [userId], onDelete: Cascade)
+  sites           Site[]
+  certifications  Certification[]
+  activities      ActivityGroup[]
+  publicationDate DateTime
+  title           String
+  content         String               @db.MediumText
+  views           Int
+  displays        Int
+
+  @@index([clubId])
+  @@index([coachId])
 }

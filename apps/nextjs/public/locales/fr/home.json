@@ -1,0 +1,81 @@
+{
+  "title": "Rejoignez la communauté des clubs de sport",
+  "hero-text": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus culpa incidunt perferendis possimus recusandae deleniti ab neque soluta! At, nam excepturi possimus odit ipsam accusamus esse obcaecati vero id reiciendis.",
+  "btn-visitor": "Je cherche un club de sport",
+  "btn-manager": "J'ai un club à gérer",
+  "btn-coach": "Je suis coach",
+  "find-club": "Trouver un club autour de chez moi",
+  "find-coach": "Trouver un coach autour de chez moi",
+  "manager-title": "Vous devez gérer un club de sport",
+  "manager-text": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus culpa incidunt perferendis possimus recusandae deleniti ab neque soluta! At, nam excepturi possimus odit ipsam accusamus esse obcaecati vero id reiciendis.",
+  "coach-title": "Vous êtes coach sportif",
+  "coach-text": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus culpa incidunt perferendis possimus recusandae deleniti ab neque soluta! At, nam excepturi possimus odit ipsam accusamus esse obcaecati vero id reiciendis.",
+  "company-title": "Vous êtes une société et cherchez un coach pour vos salariés",
+  "company-text": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus culpa incidunt perferendis possimus recusandae deleniti ab neque soluta! At, nam excepturi possimus odit ipsam accusamus esse obcaecati vero id reiciendis.",
+  "my-address": "Mon adresse",
+  "search-radius": "Rayon de recherche",
+  "search-club": "Rechercher les clubs",
+  "search-coach": "Rechercher les coachs",
+  "club": "Club",
+  "site": "Site",
+  "distance": "Distance",
+  "activities": "Activités",
+  "coach": "Coach",
+  "rating": "Note",
+  "certifications": "Certifications",
+  "page": "Page",
+  "action": "Action",
+  "select": "Sélectionner",
+  "page-coach": "Page de présentation de {{name}}",
+  "page-club": "Page du club {{name}}",
+  "offer-details": "Détails de l'offre",
+  "contact-coach": "Contacter le coach",
+  "price-range": "Prix",
+  "distance-range": "Distance",
+  "pricing": {
+    "usage": "Tarifs d'utilisation",
+    "monthly": "Par mois",
+    "yearly": "Par an",
+    "select": "Sélectionner ce plan",
+    "price-monthly": "{{price}}€/mois",
+    "price-yearly": "{{price}}€/an",
+    "try-offer": "Vous bénéficiez de 30j d'éssai gratuit lors de votre inscription !",
+    "deleted": "Supprimé le {{date}}",
+    "free": "Gratuit !",
+    "create-your-account": "Créez votre compte ou connectez-vous pour continuer",
+    "go-to-account": "Allez dans vos paramètres de compte pour modifier votre plan",
+    "my-account": "Mon compte"
+  },
+  "features": {
+    "manager": "Des outils pour le gérant de club",
+    "coach": "Des outils pour le coach",
+    "management": {
+      "title": "Gestion de club",
+      "description": "Toute la gestion de votre ou vos clubs, les activités, les plannings, les salles et les sites d'activité|Gestion de vos membres et de vos coachs"
+    },
+    "communication": {
+      "title": "Outils de communication",
+      "description": "Restez en contact permanent avec vos membres et vos coachs avec des outils de communication efficaces|Une messagerie instantanée dédiée|Des notifications d'évènements ou de changements de planning"
+    },
+    "coach-communication": {
+      "title": "Outils de communication",
+      "description": "Restez en contact permanent avec vos élèves avec des outils de communication efficaces|Une messagerie instantanée dédiée|Des notifications de messages dans leur application mobile"
+    },
+    "page": {
+      "title": "Page de présentation",
+      "description": "Une page de présentation des clubs et de leurs activités|Personnalisable au travers de nombreuses options|Accessible depuis votre adresse existante"
+    },
+    "mobile": {
+      "title": "Application mobile",
+      "description": "Une application mobile pour rester proche des membres|Réservations de cours ou de salles|présentation des évènements et des activités|notifications de changement|Outils de communication"
+    },
+    "coaching": {
+      "title": "Coaching",
+      "description": "Suivez votre planning de coaching|renseignez vos certifications|Faites vous connaître des clubs|Soyez visible sur la coaching market place pour des remplacements"
+    },
+    "video": {
+      "title": "Coaching vidéo",
+      "description": "Faites connaître vos vidéos de coaching|Gérez les abonnements à vos programmes"
+    }
+  }
+}

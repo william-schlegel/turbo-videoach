@@ -18,8 +18,22 @@ export const server = z.object({
     // VERCEL_URL doesn't include `https` so it cant be validated as a URL
     process.env.VERCEL ? z.string() : z.string().url(),
   ),
-  DISCORD_CLIENT_ID: z.string(),
-  DISCORD_CLIENT_SECRET: z.string(),
+  STRAVA_CLIENT_ID: z.string(),
+  STRAVA_CLIENT_SECRET: z.string(),
+  FACEBOOK_ID: z.string(),
+  FACEBOOK_SECRET: z.string(),
+  GOOGLE_ID: z.string(),
+  GOOGLE_SECRET: z.string(),
+  EMAIL_FROM: z.string().email(),
+  // EMAIL_SERVER: z.string(),
+  EMAIL_SERVER_USER: z.string(),
+  EMAIL_SERVER_PASSWORD: z.string(),
+  EMAIL_SERVER_HOST: z.string(),
+  EMAIL_SERVER_PORT: z.enum(["25", "587", "465", "2525", "25025"]),
+  AWS_ACCESS_KEY_ID_WSC: z.string(),
+  AWS_SECRET_ACCESS_KEY_WSC: z.string(),
+  STREAMCHAT_API_KEY: z.string(),
+  STREAMCHAT_SECRET_KEY: z.string(),
 });
 
 /**
@@ -28,7 +42,9 @@ export const server = z.object({
  * To expose them to the client, prefix them with `NEXT_PUBLIC_`.
  */
 export const client = z.object({
-  // NEXT_PUBLIC_CLIENTVAR: z.string(),
+  NEXT_PUBLIC_MAPBOX_TOKEN: z.string(),
+  NEXT_PUBLIC_MAPQUEST_KEY: z.string(),
+  NEXT_PUBLIC_STREAMCHAT_API_KEY: z.string(),
 });
 
 /**
@@ -41,9 +57,25 @@ const processEnv = {
   NODE_ENV: process.env.NODE_ENV,
   NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
   NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-  DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
-  DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
-  // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
+  STRAVA_CLIENT_ID: process.env.STRAVA_CLIENT_ID,
+  STRAVA_CLIENT_SECRET: process.env.STRAVA_CLIENT_SECRET,
+  FACEBOOK_ID: process.env.FACEBOOK_ID,
+  FACEBOOK_SECRET: process.env.FACEBOOK_SECRET,
+  GOOGLE_ID: process.env.GOOGLE_ID,
+  GOOGLE_SECRET: process.env.GOOGLE_SECRET,
+  EMAIL_FROM: process.env.EMAIL_FROM,
+  EMAIL_SERVER_USER: process.env.EMAIL_SERVER_USER,
+  EMAIL_SERVER_PASSWORD: process.env.EMAIL_SERVER_PASSWORD,
+  EMAIL_SERVER_HOST: process.env.EMAIL_SERVER_HOST,
+  EMAIL_SERVER_PORT: process.env.EMAIL_SERVER_PORT,
+  AWS_ACCESS_KEY_ID_WSC: process.env.AWS_ACCESS_KEY_ID_WSC,
+  AWS_SECRET_ACCESS_KEY_WSC: process.env.AWS_SECRET_ACCESS_KEY_WSC,
+  STREAMCHAT_API_KEY: process.env.STREAMCHAT_API_KEY,
+  STREAMCHAT_SECRET_KEY: process.env.STREAMCHAT_SECRET_KEY,
+
+  NEXT_PUBLIC_MAPBOX_TOKEN: process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
+  NEXT_PUBLIC_MAPQUEST_KEY: process.env.NEXT_PUBLIC_MAPQUEST_KEY,
+  NEXT_PUBLIC_STREAMCHAT_API_KEY: process.env.NEXT_PUBLIC_STREAMCHAT_API_KEY,
 };
 
 // Don't touch the part below
