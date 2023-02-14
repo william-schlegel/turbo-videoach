@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { authOptions } from "@auth/[...nextauth]";
+import { authOptions } from "@acme/auth";
 import { isCUID } from "@lib/checkValidity";
 import createLink from "@lib/createLink";
 import { formatDateLocalized } from "@lib/formatDate";
@@ -91,7 +91,7 @@ const ManageNotifications = ({
           <div className="w-1/4 space-y-2">
             <div className="grid grid-cols-2 gap-2">
               <Link
-                className={`btn btn-primary ${
+                className={`btn-primary btn ${
                   fromTo === "to" ? "" : "btn-outline"
                 }`}
                 href={createLink({
@@ -103,7 +103,7 @@ const ManageNotifications = ({
                 {t("notification.to")}
               </Link>
               <Link
-                className={`btn btn-primary ${
+                className={`btn-primary btn ${
                   fromTo === "from" ? "" : "btn-outline"
                 }`}
                 href={createLink({
@@ -311,7 +311,7 @@ function NotificationMessage({
   }
   const Elem: JSX.Element[] = [];
   Elem.push(
-    <div className="badge badge-info">
+    <div className="badge-info badge">
       {t("notification.notification-type", {
         type: getName(notification.type),
       })}
@@ -329,7 +329,7 @@ function NotificationMessage({
             }),
           })}
         </span>
-        <span className="badge badge-primary">
+        <span className="badge-primary badge">
           {t(notification.answer ?? "")}
         </span>
       </div>,
@@ -353,7 +353,7 @@ function NotificationMessage({
       Elem.push(
         <div className="flex items-center gap-2">
           <button
-            className="btn btn-success"
+            className="btn-success btn"
             type="button"
             onClick={() =>
               handleClick(
@@ -365,7 +365,7 @@ function NotificationMessage({
             {t("notification.accept")}
           </button>
           <button
-            className="btn btn-error"
+            className="btn-error btn"
             type="button"
             onClick={() =>
               handleClick(
@@ -382,7 +382,7 @@ function NotificationMessage({
       Elem.push(
         <div className="flex items-center gap-2">
           <button
-            className="btn btn-success"
+            className="btn-success btn"
             type="button"
             onClick={() =>
               handleClick(
@@ -394,7 +394,7 @@ function NotificationMessage({
             {t("notification.validate")}
           </button>
           <button
-            className="btn btn-error"
+            className="btn-error btn"
             type="button"
             onClick={() =>
               handleClick(

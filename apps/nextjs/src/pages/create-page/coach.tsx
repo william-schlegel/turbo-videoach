@@ -1,4 +1,4 @@
-import { authOptions } from "@auth/[...nextauth]";
+import { authOptions } from "@acme/auth";
 import { Role } from "@prisma/client";
 import { CoachCreation } from "@sections/coach";
 import { api } from "@trpcclient/api";
@@ -61,7 +61,7 @@ function CoachPage({
               href={`/presentation-page/coach/${userId}/${queryPage.data.id}`}
               target="_blank"
               referrerPolicy="no-referrer"
-              className="btn btn-primary flex gap-2"
+              className="btn-primary btn flex gap-2"
             >
               {t("page-preview")}
               <i className="bx bx-link-external bx-xs" />

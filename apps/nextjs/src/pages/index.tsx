@@ -1,9 +1,9 @@
+import { authOptions } from "@acme/auth";
 import { Role } from "@prisma/client";
 import { type GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import nextI18nConfig from "../../next-i18next.config.mjs";
-import { authOptions } from "./api/auth/[...nextauth]";
 
 export default function Index() {
   return <div>Videoach</div>;

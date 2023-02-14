@@ -9,7 +9,6 @@ import Confirmation from "@ui/confirmation";
 import Modal, { getButtonSize } from "@ui/modal";
 import { TextError } from "@ui/simpleform";
 import Spinner from "@ui/spinner";
-import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { useEffect, useState } from "react";
 import type { SubmitHandler } from "react-hook-form";
@@ -127,7 +126,7 @@ function AddPlanning({ clubId, pageId, sectionId }: PlanningProps) {
   const utils = api.useContext();
   const { t } = useTranslation("pages");
   const [close, setClose] = useState(false);
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
 
   const createPlanning = api.pages.createPageSectionElement.useMutation({
     onSuccess: () => {
@@ -194,7 +193,7 @@ function UpdatePlanning({ clubId, pageId, planningId }: UpdatePlanningProps) {
   const utils = api.useContext();
   const { t } = useTranslation("pages");
   const [close, setClose] = useState(false);
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const [initialData, setInitialData] = useState<
     PlanningFormValues | undefined
   >();
@@ -477,7 +476,7 @@ function PlanningForm({
       <div className="col-span-full mt-4 flex items-center justify-end gap-2">
         <button
           type="button"
-          className="btn-outline btn-secondary btn"
+          className="btn-outline btn btn-secondary"
           onClick={(e) => {
             e.preventDefault();
             reset();
@@ -486,7 +485,7 @@ function PlanningForm({
         >
           {t("common:cancel")}
         </button>
-        <button className="btn-primary btn" type="submit">
+        <button className="btn btn-primary" type="submit">
           {t("common:save")}
         </button>
       </div>

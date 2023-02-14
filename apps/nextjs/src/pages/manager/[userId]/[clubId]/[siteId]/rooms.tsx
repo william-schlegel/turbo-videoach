@@ -1,4 +1,4 @@
-import { authOptions } from "@auth/[...nextauth]";
+import { authOptions } from "@acme/auth";
 import { isCUID } from "@lib/checkValidity";
 import createLink from "@lib/createLink";
 import useUserInfo from "@lib/useUserInfo";
@@ -17,7 +17,6 @@ import {
   type InferGetServerSidePropsType,
 } from "next";
 import { getServerSession } from "next-auth";
-import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
@@ -30,7 +29,7 @@ const ManageRooms = ({
   clubId,
   siteId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const router = useRouter();
   const roomId = router.query.roomId as string;
   const siteQuery = api.sites.getSiteById.useQuery(siteId);
@@ -104,7 +103,7 @@ const ManageRooms = ({
                       <i className="bx bx-calendar-alt bx-sm text-secondary" />
                     )}
                     {room.unavailable ? (
-                      <span className="badge badge-error">
+                      <span className="badge-error badge">
                         {t("room.closed")}
                       </span>
                     ) : null}

@@ -1,7 +1,6 @@
 import { isCUID } from "@lib/checkValidity";
 import { api } from "@trpcclient/api";
 import { type GetServerSidePropsContext } from "next";
-import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { StreamChat } from "stream-chat";
@@ -14,7 +13,7 @@ const client = StreamChat.getInstance(
 
 const Chat = () => {
   const { t } = useTranslation("dashboard");
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const user = api.users.getUserById.useQuery(sessionData?.user?.id ?? "", {
     enabled: isCUID(sessionData?.user?.id),
     async onSuccess(data) {

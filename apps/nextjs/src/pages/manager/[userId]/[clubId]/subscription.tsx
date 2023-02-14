@@ -1,4 +1,4 @@
-import { authOptions } from "@auth/[...nextauth]";
+import { authOptions } from "@acme/auth";
 import { isCUID } from "@lib/checkValidity";
 import createLink from "@lib/createLink";
 import { formatDateLocalized } from "@lib/formatDate";
@@ -19,7 +19,6 @@ import {
   type InferGetServerSidePropsType,
 } from "next";
 import { getServerSession } from "next-auth";
-import { useSession } from "next-auth/react";
 import { i18n, useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
@@ -32,7 +31,7 @@ import Layout from "~/components/layout";
 const ManageSubscriptions = ({
   clubId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const router = useRouter();
   const subscriptionId = router.query.subscriptionId as string;
   const clubQuery = api.clubs.getClubById.useQuery(clubId, {
@@ -73,7 +72,7 @@ const ManageSubscriptions = ({
           <CreateSubscription clubId={clubId} />
         </div>
         <button
-          className="btn-outline btn-primary btn"
+          className="btn-outline btn btn-primary"
           onClick={() => {
             const path = `/manager/${
               sessionData?.user?.id ?? ""
@@ -289,7 +288,7 @@ export function SubscriptionContent({
               {info}
             </div>
             <button
-              className="btn-primary btn-block btn mt-4"
+              className="btn btn-primary btn-block mt-4"
               onClick={handleSaveSelection}
             >
               {t("subscription.validate-selection")}

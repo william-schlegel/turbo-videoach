@@ -9,7 +9,6 @@ import Confirmation from "@ui/confirmation";
 import Modal, { getButtonSize } from "@ui/modal";
 import { TextError } from "@ui/simpleform";
 import Spinner from "@ui/spinner";
-import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -137,7 +136,7 @@ function AddOffer({ clubId, pageId, sectionId }: OfferProps) {
   const utils = api.useContext();
   const { t } = useTranslation("pages");
   const [close, setClose] = useState(false);
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
 
   const createOffer = api.pages.createPageSectionElement.useMutation({
     onSuccess: () => {
@@ -203,7 +202,7 @@ function UpdateOffer({ clubId, pageId, offerId }: UpdateOfferProps) {
   const utils = api.useContext();
   const { t } = useTranslation("pages");
   const [close, setClose] = useState(false);
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const [initialData, setInitialData] = useState<OfferFormValues | undefined>();
   const queryOffer = api.pages.getPageSectionElementById.useQuery(offerId, {
     enabled: isCUID(offerId),
@@ -451,7 +450,7 @@ function OfferForm({
       <div className="col-span-full mt-4 flex items-center justify-end gap-2">
         <button
           type="button"
-          className="btn-outline btn-secondary btn"
+          className="btn-outline btn btn-secondary"
           onClick={(e) => {
             e.preventDefault();
             reset();
@@ -460,7 +459,7 @@ function OfferForm({
         >
           {t("common:cancel")}
         </button>
-        <button className="btn-primary btn" type="submit">
+        <button className="btn btn-primary" type="submit">
           {t("common:save")}
         </button>
       </div>
@@ -524,7 +523,7 @@ function OfferContentCard({
   offer,
   clubId,
 }: OffersContentCardProps) {
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const offerQuery = api.subscriptions.getSubscriptionById.useQuery(
     offer.optionValue ?? "",
     { enabled: isCUID(offer.optionValue) },
@@ -590,7 +589,7 @@ function OfferContentCard({
         </div>
         {preview ? (
           <div className="card-actions justify-end">
-            <button className="btn-primary btn">{t("offer.select")}</button>
+            <button className="btn btn-primary">{t("offer.select")}</button>
           </div>
         ) : sessionData?.user?.id ? (
           <div>
@@ -599,13 +598,13 @@ function OfferContentCard({
                 sessionData.user.id
               }/subscribe?clubId=${clubId}&offerId=${offer.optionValue ?? ""}`}
             >
-              <button className="btn-primary btn">{t("offer.select")}</button>
+              <button className="btn btn-primary">{t("offer.select")}</button>
             </Link>
           </div>
         ) : (
           <div>
             <Link href="/user/signin">
-              <button className="btn-primary btn">
+              <button className="btn btn-primary">
                 {t("offer.connect-to-subscribe")}
               </button>
             </Link>

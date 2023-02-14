@@ -12,7 +12,6 @@ import Confirmation from "@ui/confirmation";
 import Ribbon from "@ui/ribbon";
 import Spinner from "@ui/spinner";
 import { format, isDate, isSameDay, startOfToday } from "date-fns";
-import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { useEffect, useState, type PropsWithoutRef } from "react";
 import { useForm, useWatch, type SubmitHandler } from "react-hook-form";
@@ -50,7 +49,7 @@ export const CreateEvent = ({ clubId }: CreateEventProps) => {
   const utils = api.useContext();
   const { t } = useTranslation("club");
   const [close, setClose] = useState(false);
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
 
   const createEvent = api.events.createEvent.useMutation({
     onSuccess: () => {
@@ -118,7 +117,7 @@ export const UpdateEvent = ({
   variant = "Icon-Outlined-Primary",
   buttonSize = "sm",
 }: PropsUpdateDelete) => {
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const utils = api.useContext();
   const { t } = useTranslation("club");
   const [initialData, setInitialData] = useState<EventFormValues | undefined>();
@@ -233,7 +232,7 @@ export const DeleteEvent = ({
   buttonSize = "sm",
 }: PropsWithoutRef<PropsUpdateDelete>) => {
   const utils = api.useContext();
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const { t } = useTranslation("club");
 
   const deleteEvent = api.events.deleteEvent.useMutation({
@@ -511,7 +510,7 @@ function EventForm({
       <div className="col-span-full flex items-center justify-end gap-2">
         <button
           type="button"
-          className="btn-outline btn-secondary btn"
+          className="btn-outline btn btn-secondary"
           onClick={(e) => {
             e.preventDefault();
             reset();
@@ -520,7 +519,7 @@ function EventForm({
         >
           {t("common:cancel")}
         </button>
-        <button className="btn-primary btn" type="submit">
+        <button className="btn btn-primary" type="submit">
           {t("common:save")}
         </button>
       </div>

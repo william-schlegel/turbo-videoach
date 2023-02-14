@@ -1,4 +1,4 @@
-import { authOptions } from "@auth/[...nextauth]";
+import { authOptions } from "@acme/auth";
 import {
   DndContext,
   PointerSensor,
@@ -26,7 +26,6 @@ import {
   type InferGetServerSidePropsType,
 } from "next";
 import { getServerSession } from "next-auth";
-import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Image from "next/image";
@@ -40,7 +39,7 @@ import Layout from "~/components/layout";
 const ManageClubs = ({
   userId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const router = useRouter();
   const clubId = router.query.clubId as string;
   const clubQuery = api.clubs.getClubsForManager.useQuery(userId, {

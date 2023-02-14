@@ -3,7 +3,6 @@ import { formatDateAsYYYYMMDD } from "@lib/formatDate";
 import { SubscriptionMode, SubscriptionRestriction } from "@prisma/client";
 import { api } from "@trpcclient/api";
 import Confirmation from "@ui/confirmation";
-import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { type PropsWithoutRef } from "react";
 import {
@@ -186,7 +185,7 @@ export const DeleteSubscription = ({
   variant = "Icon-Outlined-Secondary",
 }: PropsWithoutRef<PropsUpdateDelete>) => {
   const utils = api.useContext();
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const { t } = useTranslation("club");
 
   const deleteSubscription = api.subscriptions.deleteSubscription.useMutation({

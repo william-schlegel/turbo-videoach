@@ -1,4 +1,4 @@
-import { authOptions } from "@auth/[...nextauth]";
+import { authOptions } from "@acme/auth";
 import { formatDateLocalized } from "@lib/formatDate";
 import { useDayName } from "@lib/useDayName";
 import useUserInfo from "@lib/useUserInfo";

@@ -1,4 +1,4 @@
-import { authOptions } from "@auth/[...nextauth]";
+import { authOptions } from "@acme/auth";
 import {
   DndContext,
   DragOverlay,
@@ -152,7 +152,7 @@ export function PlanningName({ planning }: { planning: Planning }) {
       {planning.name ? <span>{planning.name}</span> : null}
       <span
         className={`${
-          planning.name ? "badge badge-secondary" : ""
+          planning.name ? "badge-secondary badge" : ""
         } flex items-center gap-2`}
       >
         {!planning.name && <span>{t("from")}</span>}
@@ -308,7 +308,7 @@ const PlanningContent = ({
         <div className="modal-box relative">
           <label
             htmlFor="modal-drop"
-            className="btn btn-secondary btn-sm btn-circle absolute right-2 top-2"
+            className="btn-secondary btn-sm btn-circle btn absolute right-2 top-2"
           >
             <i className="bx bx-x bx-sm" />
           </label>
@@ -571,7 +571,7 @@ function PopupActivityDetails({
       }}
     >
       <button
-        className="btn btn-secondary btn-sm btn-circle absolute right-1 top-1"
+        className="btn-secondary btn-sm btn-circle btn absolute right-1 top-1"
         onClick={onClose}
       >
         <i className="bx bx-x bx-sm" />
@@ -756,7 +756,7 @@ function FormActivity({
               buttonIcon={<i className="bx bx-trash bx-sm" />}
             />
           ) : null}
-          <button className="btn btn-primary ml-2">
+          <button className="btn-primary btn ml-2">
             {t(update ? "update" : "validation")}
           </button>
         </label>

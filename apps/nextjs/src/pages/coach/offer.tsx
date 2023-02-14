@@ -1,4 +1,4 @@
-import { authOptions } from "@auth/[...nextauth]";
+import { authOptions } from "@acme/auth";
 import { isCUID } from "@lib/checkValidity";
 import createLink from "@lib/createLink";
 import {
@@ -16,7 +16,6 @@ import type {
   InferGetServerSidePropsType,
 } from "next";
 import { getServerSession } from "next-auth";
-import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
@@ -27,7 +26,7 @@ import Layout from "~/components/layout";
 function CoachOffer({
   userId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const router = useRouter();
   const offerId = router.query.offerId as string;
   const { t } = useTranslation("coach");
@@ -69,7 +68,7 @@ function CoachOffer({
                   }`}
                 >
                   <span>{offer.name}</span>
-                  <span className="badge badge-secondary">
+                  <span className="badge-secondary badge">
                     {getName(offer.target)}
                   </span>
                 </Link>

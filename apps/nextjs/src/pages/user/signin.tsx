@@ -6,7 +6,7 @@ import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
-import { getProviders, signIn, useSession } from "next-auth/react";
+import { getProviders, signIn } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Head from "next/head";
@@ -30,7 +30,7 @@ export default function SignIn({
   const [password, setPassword] = useState("");
   const router = useRouter();
   const [theme] = useLocalStorage<TThemes>("theme", "cupcake");
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
 
   const signInEmail = router.query.email;
   const signInCredentials = router.query.password;

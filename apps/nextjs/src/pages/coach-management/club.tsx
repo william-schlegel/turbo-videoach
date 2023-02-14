@@ -1,4 +1,4 @@
-import { authOptions } from "@auth/[...nextauth]";
+import { authOptions } from "@acme/auth";
 import { isCUID } from "@lib/checkValidity";
 import createLink from "@lib/createLink";
 import { AddCoachToClub, CoachDataPresentation } from "@modals/manageClub";

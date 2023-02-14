@@ -11,7 +11,6 @@ import Confirmation from "@ui/confirmation";
 import Modal from "@ui/modal";
 import Rating from "@ui/rating";
 import Spinner from "@ui/spinner";
-import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import Image from "next/image";
 import Link from "next/link";
@@ -29,7 +28,7 @@ import FindCoach from "../sections/findCoach";
 const MAX_SIZE_LOGO = 1024 * 1024;
 
 export const CreateClub = () => {
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const utils = api.useContext();
   const { t } = useTranslation("club");
   const [closeModal, setCloseModal] = useState(false);
@@ -86,7 +85,7 @@ type PropsUpdateDelete = {
 };
 
 export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const utils = api.useContext();
   const { t } = useTranslation("club");
   const [initialData, setInitialData] = useState<ClubFormValues | undefined>();
@@ -344,7 +343,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
       ) : null}
       <div className="col-span-2 flex items-center justify-end gap-2">
         <button
-          className="btn-outline btn-secondary btn"
+          className="btn-outline btn btn-secondary"
           onClick={(e) => {
             e.preventDefault();
             onCancel();
@@ -352,7 +351,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
         >
           {t("common:cancel")}
         </button>
-        <button className="btn-primary btn" type="submit">
+        <button className="btn btn-primary" type="submit">
           {t("common:save")}
         </button>
       </div>
@@ -362,7 +361,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
 
 export const DeleteClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
   const utils = api.useContext();
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const { t } = useTranslation("club");
 
   const deleteClub = api.clubs.deleteClub.useMutation({
@@ -478,7 +477,7 @@ export const AddCoachToClub = ({ clubId, userId }: AddCoachToClubProps) => {
               required
             />
             <div className="mt-4 flex justify-end gap-2">
-              <button className="btn-primary btn" type="submit">
+              <button className="btn btn-primary" type="submit">
                 {t("coach.write")}
               </button>
             </div>
@@ -558,7 +557,7 @@ export function CoachDataPresentation({
             target="_blank"
             rel="noreferrer"
           >
-            <button className="btn-primary btn flex items-center gap-4">
+            <button className="btn btn-primary flex items-center gap-4">
               <span>{t("coach.view-page")}</span>
               <i className="bx bx-link-external bx-xs" />
             </button>

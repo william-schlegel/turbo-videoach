@@ -2,7 +2,6 @@ import { isCUID } from "@lib/checkValidity";
 import { Role, type Feature } from "@prisma/client";
 import { api } from "@trpcclient/api";
 import { differenceInDays, startOfToday } from "date-fns";
-import { useSession } from "next-auth/react";
 import { useState } from "react";
 
 export const ROLE_LIST = [
@@ -20,7 +19,7 @@ export function getRoleName(role: Role) {
 export default function useUserInfo(userId?: string | null) {
   const [remainTrial, setRemainTrial] = useState(0);
   const [features, setFeatures] = useState<Feature[]>([]);
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
 
   const uId = userId ?? sessionData?.user?.id ?? "";
 

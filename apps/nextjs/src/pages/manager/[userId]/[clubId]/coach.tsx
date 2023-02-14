@@ -1,4 +1,4 @@
-import { authOptions } from "@auth/[...nextauth]";
+import { authOptions } from "@acme/auth";
 import { isCUID } from "@lib/checkValidity";
 import createLink from "@lib/createLink";
 import { useDayName } from "@lib/useDayName";
@@ -19,7 +19,6 @@ import {
   type InferGetServerSidePropsType,
 } from "next";
 import { getServerSession } from "next-auth";
-import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
@@ -32,7 +31,7 @@ const ManageCoachs = ({
   clubId,
   userId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const router = useRouter();
   const coachId = router.query.coachId as string;
   const clubQuery = api.clubs.getClubById.useQuery(clubId, {

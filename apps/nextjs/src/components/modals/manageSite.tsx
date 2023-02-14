@@ -2,7 +2,6 @@ import { LATITUDE, LONGITUDE } from "@lib/defaultValues";
 import { api } from "@trpcclient/api";
 import AddressSearch from "@ui/addressSearch";
 import Confirmation from "@ui/confirmation";
-import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { useEffect, useState, type PropsWithoutRef } from "react";
 import {
@@ -138,7 +137,7 @@ export const DeleteSite = ({
   variant = "Icon-Outlined-Secondary",
 }: PropsWithoutRef<PropsUpdateDelete>) => {
   const utils = api.useContext();
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const { t } = useTranslation("club");
 
   const deleteSite = api.sites.deleteSite.useMutation({
@@ -270,7 +269,7 @@ function SiteForm({
       <div className="col-span-2 flex items-center justify-end gap-2">
         <button
           type="button"
-          className="btn-outline btn-secondary btn"
+          className="btn-outline btn btn-secondary"
           onClick={(e) => {
             e.preventDefault();
             onCancel();
@@ -278,7 +277,7 @@ function SiteForm({
         >
           {t("common:cancel")}
         </button>
-        <button className="btn-primary btn" type="submit">
+        <button className="btn btn-primary" type="submit">
           {t("common:save")}
         </button>
       </div>

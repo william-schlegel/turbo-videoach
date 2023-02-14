@@ -1,4 +1,4 @@
-import { authOptions } from "@auth/[...nextauth]";
+import { authOptions } from "@acme/auth";
 import { isCUID } from "@lib/checkValidity";
 import useUserInfo from "@lib/useUserInfo";
 import {
@@ -15,7 +15,6 @@ import {
   type InferGetServerSidePropsType,
 } from "next";
 import { getServerSession } from "next-auth";
-import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useState } from "react";
@@ -26,7 +25,7 @@ import Layout from "~/components/layout";
 const ManageCertifications = ({
   userId,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const certificationQuery = api.coachs.getCertificationsForCoach.useQuery(
     userId,
     {

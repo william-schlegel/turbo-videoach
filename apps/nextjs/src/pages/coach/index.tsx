@@ -1,5 +1,5 @@
 import { appRouter, createInnerTRPCContext } from "@acme/api";
-import { authOptions } from "@auth/[...nextauth]";
+import { authOptions } from "@acme/auth";
 import { createProxySSGHelpers } from "@trpc/react-query/ssg";
 import { api } from "@trpcclient/api";
 import { Feature, FeatureContainer } from "@ui/features";
@@ -9,7 +9,6 @@ import type {
   InferGetServerSidePropsType,
 } from "next";
 import { getServerSession } from "next-auth";
-import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link";
@@ -24,7 +23,7 @@ function CoachPage(
   const pricingQuery = api.pricings.getPricingForRole.useQuery("COACH");
   const { data } = pricingQuery;
   const { t } = useTranslation("home");
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
 
   return (
     <Layout title={t("coach-title")}>

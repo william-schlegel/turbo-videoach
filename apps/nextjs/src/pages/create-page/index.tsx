@@ -1,16 +1,16 @@
+import { authOptions } from "@acme/auth";
 import { Role } from "@prisma/client";
 import { type GetServerSidePropsContext } from "next";
 import { getServerSession } from "next-auth/next";
-import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Link from "next/link.js";
 import nextI18nConfig from "~/../next-i18next.config.mjs";
 import Layout from "~/components/layout";
-import { authOptions } from "../api/auth/[...nextauth]";
+import { api } from "~/utils/api";
 
 const PageCreation = () => {
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const { t } = useTranslation();
   if (sessionData?.user?.role === Role.MANAGER_COACH)
     return (

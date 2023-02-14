@@ -4,7 +4,7 @@ import useNotifications from "@lib/useNotifications";
 import useUserInfo from "@lib/useUserInfo";
 import type { Feature, Role } from "@prisma/client";
 import { api } from "@trpcclient/api";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import Link from "next/link";
 import { type TThemes } from "./themeSelector";
@@ -96,7 +96,7 @@ type NavbarProps = {
 };
 
 export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const userId = sessionData?.user?.id;
   const { t } = useTranslation("common");
   const { notifications, unread, formatMessage } = useNotifications(userId);
@@ -108,7 +108,7 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
     <div className="navbar bg-base-100">
       <div className="navbar-start">
         <div className="dropdown">
-          <label tabIndex={0} className="btn-ghost btn lg:hidden">
+          <label tabIndex={0} className="btn btn-ghost lg:hidden">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-5 w-5"
@@ -172,7 +172,7 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
           <>
             {notifications.length ? (
               <div className="dropdown dropdown-end">
-                <label tabIndex={0} className="btn-ghost btn-circle btn">
+                <label tabIndex={0} className="btn btn-ghost btn-circle">
                   <div className="w-10 rounded-full">
                     {unread ? (
                       <div className="indicator ">
@@ -216,7 +216,7 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
               <i className="bx bx-bell bx-md text-base-300" />
             )}{" "}
             <div className="dropdown dropdown-end">
-              <label tabIndex={0} className="btn-ghost btn-circle avatar btn">
+              <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
                 <div className="w-10 rounded-full">
                   <img
                     src={user.data?.profileImageUrl ?? "/images/dummy.jpg"}
@@ -267,7 +267,7 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
 }
 
 const Menu = () => {
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const { t } = useTranslation("common");
   const { features } = useUserInfo();
 
@@ -307,7 +307,7 @@ const Menu = () => {
 const Logo = () => {
   return (
     <div className="flex-1">
-      <Link href={"/videoach"} className="btn-ghost btn text-2xl capitalize">
+      <Link href={"/videoach"} className="btn btn-ghost text-2xl capitalize">
         Videoach
       </Link>
     </div>

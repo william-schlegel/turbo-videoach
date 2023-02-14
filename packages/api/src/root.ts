@@ -1,5 +1,5 @@
-import { createTRPCRouter } from "./trpc";
 import { activityRouter } from "./router/activities";
+import { authRouter } from "./router/auth";
 import { calendarRouter } from "./router/calendar";
 import { clubRouter } from "./router/clubs";
 import { coachRouter } from "./router/coachs";
@@ -13,8 +13,10 @@ import { pricingRouter } from "./router/pricing";
 import { siteRouter } from "./router/sites";
 import { subscriptionRouter } from "./router/subscription";
 import { userRouter } from "./router/users";
+import { createTRPCRouter } from "./trpc";
 
 export const appRouter = createTRPCRouter({
+  auth: authRouter,
   users: userRouter,
   clubs: clubRouter,
   sites: siteRouter,

@@ -3,7 +3,6 @@ import { formatDateLocalized } from "@lib/formatDate";
 import { formatMoney } from "@lib/formatNumber";
 import { api } from "@trpcclient/api";
 import type { GetServerSidePropsContext } from "next";
-import { useSession } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import { useRouter } from "next/router";
@@ -19,7 +18,7 @@ export default function Profile() {
   const { clubId, offerId } = router.query;
   const myClubId = (Array.isArray(clubId) ? clubId[0] : clubId) || "";
   const myOfferId = (Array.isArray(offerId) ? offerId[0] : offerId) || "";
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const [monthly, setMonthly] = useState(true);
   const [online, setOnline] = useState(false);
 
@@ -74,7 +73,7 @@ export default function Profile() {
         <div className="card-body">
           <div className="flex items-center justify-between">
             <h3 className="card-title text-primary">{offerQuery.data?.name}</h3>
-            <span className="badge badge-primary">{clubQuery.data?.name}</span>
+            <span className="badge-primary badge">{clubQuery.data?.name}</span>
           </div>
           {shortInfo ? <p>{shortInfo}</p> : ""}
           <div className="flex gap-2">

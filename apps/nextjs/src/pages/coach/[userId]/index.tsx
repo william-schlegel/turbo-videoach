@@ -1,4 +1,4 @@
-import { authOptions } from "@auth/[...nextauth]";
+import { authOptions } from "@acme/auth";
 import { useDayName } from "@lib/useDayName";
 import useUserInfo from "@lib/useUserInfo";
 import type { DayName } from "@prisma/client";
@@ -58,7 +58,7 @@ const CoachDashboard = ({
         <div className="flex items-center gap-4">
           {features.includes("COACH_CERTIFICATION") ? (
             <Link
-              className="btn btn-secondary"
+              className="btn-secondary btn"
               href={`${userId}/certifications`}
             >
               {t("manage-certifications")}
