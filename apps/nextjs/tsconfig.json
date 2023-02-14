@@ -12,7 +12,7 @@
       "@auth/*": ["./src/pages/api/auth/*"]
     }
   },
-  "exclude": ["node_modules"],
+  "exclude": [],
   "include": [
     "next-env.d.ts",
     "**/*.ts",

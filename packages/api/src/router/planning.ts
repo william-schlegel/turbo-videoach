@@ -1,4 +1,3 @@
-import { isCUID } from "@lib/checkValidity";
 import type {
   Activity,
   Club,
@@ -10,8 +9,9 @@ import type {
   UserCoach,
 } from "@prisma/client";
 import { DayName } from "@prisma/client";
-import { getDayName } from "@trpcserver/lib/days";
 import { z } from "zod";
+import { isCUID } from "../lib/checkValidity";
+import { getDayName } from "../lib/days";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 const planningObject = z.object({
@@ -43,7 +43,7 @@ export const planningRouter = createTRPCRouter({
       ctx.prisma.planning.findMany({
         where: { clubId: input },
         orderBy: { startDate: "desc" },
-      })
+      }),
     ),
 
   getPlanningById: protectedProcedure
@@ -67,7 +67,7 @@ export const planningRouter = createTRPCRouter({
             select: { name: true },
           },
         },
-      })
+      }),
     ),
   getPlanningActivityById: protectedProcedure
     .input(z.string().cuid().nullable())
@@ -90,7 +90,7 @@ export const planningRouter = createTRPCRouter({
     .mutation(({ ctx, input }) =>
       ctx.prisma.planning.create({
         data: input,
-      })
+      }),
     ),
   updatePlanningForClub: protectedProcedure
     .input(planningObject.partial())
@@ -98,7 +98,7 @@ export const planningRouter = createTRPCRouter({
       ctx.prisma.planning.update({
         where: { id: input.id },
         data: input,
-      })
+      }),
     ),
   duplicatePlanningForClub: protectedProcedure
     .input(planningObject.partial())
@@ -137,12 +137,12 @@ export const planningRouter = createTRPCRouter({
     .mutation(({ ctx, input }) =>
       ctx.prisma.planning.delete({
         where: { id: input },
-      })
+      }),
     ),
   addPlanningActivity: protectedProcedure
     .input(planningActivityObject.omit({ id: true }))
     .mutation(({ ctx, input }) =>
-      ctx.prisma.planningActivity.create({ data: input })
+      ctx.prisma.planningActivity.create({ data: input }),
     ),
   updatePlanningActivity: protectedProcedure
     .input(planningActivityObject.partial())
@@ -150,21 +150,21 @@ export const planningRouter = createTRPCRouter({
       ctx.prisma.planningActivity.update({
         where: { id: input.id },
         data: input,
-      })
+      }),
     ),
   deletePlanningActivity: protectedProcedure
     .input(z.string())
     .mutation(({ ctx, input }) =>
       ctx.prisma.planningActivity.delete({
         where: { id: input },
-      })
+      }),
     ),
   getClubDailyPlanning: publicProcedure
     .input(
       z.object({
         clubId: z.string().cuid(),
         day: z.nativeEnum(DayName),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const planning = await ctx.prisma.planning.findFirst({
@@ -197,7 +197,7 @@ export const planningRouter = createTRPCRouter({
       z.object({
         coachId: z.string().cuid(),
         day: z.nativeEnum(DayName),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const planning = await ctx.prisma.planning.findMany({
@@ -235,7 +235,7 @@ export const planningRouter = createTRPCRouter({
       z.object({
         coachId: z.string().cuid(),
         clubId: z.string().cuid(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const planning = await ctx.prisma.planning.findFirst({
@@ -268,7 +268,7 @@ export const planningRouter = createTRPCRouter({
       z.object({
         memberId: z.string().cuid(),
         date: z.date(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const user = await ctx.prisma.user.findUnique({
@@ -289,7 +289,7 @@ export const planningRouter = createTRPCRouter({
         },
       });
       const clubIds = Array.from(
-        new Set(user?.memberData?.subscriptions.map((s) => s.clubId))
+        new Set(user?.memberData?.subscriptions.map((s) => s.clubId)),
       );
 
       const planningClubs = await ctx.prisma.planning.findMany({
@@ -328,7 +328,7 @@ export const planningRouter = createTRPCRouter({
 
       for (const planningClub of planningClubs) {
         const sub = user?.memberData?.subscriptions.filter(
-          (s) => s.clubId === planningClub.clubId
+          (s) => s.clubId === planningClub.clubId,
         );
 
         type TIn = { in: string[] };
@@ -466,7 +466,7 @@ export const planningRouter = createTRPCRouter({
         memberId: z.string().cuid(),
         planningActivityId: z.string().cuid(),
         date: z.date(),
-      })
+      }),
     )
     .mutation(({ ctx, input }) =>
       ctx.prisma.reservation.create({
@@ -475,12 +475,12 @@ export const planningRouter = createTRPCRouter({
           planningActivityId: input.planningActivityId,
           userId: input.memberId,
         },
-      })
+      }),
     ),
   deleteReservation: protectedProcedure
     .input(z.string().cuid())
     .mutation(({ ctx, input }) =>
-      ctx.prisma.reservation.delete({ where: { id: input } })
+      ctx.prisma.reservation.delete({ where: { id: input } }),
     ),
   createActivityReservation: protectedProcedure
     .input(
@@ -490,7 +490,7 @@ export const planningRouter = createTRPCRouter({
         date: z.date(),
         activitySlot: z.number(),
         roomId: z.string().cuid(),
-      })
+      }),
     )
     .mutation(({ ctx, input }) =>
       ctx.prisma.reservation.create({
@@ -501,6 +501,6 @@ export const planningRouter = createTRPCRouter({
           activitySlot: input.activitySlot,
           roomId: input.roomId,
         },
-      })
+      }),
     ),
 });

@@ -1,7 +1,7 @@
 import { Role } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { createToken, streamchatClient } from "../../streamchat";
+import { createToken, streamchatClient } from "../streamchat";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { getDocUrl } from "./files";
 
@@ -20,7 +20,7 @@ export const clubRouter = createTRPCRouter({
         },
       });
       const take: number | undefined = user?.pricing?.features.find(
-        (f) => f.feature === "MANAGER_MULTI_SITE"
+        (f) => f.feature === "MANAGER_MULTI_SITE",
       )
         ? undefined
         : 1;
@@ -94,7 +94,7 @@ export const clubRouter = createTRPCRouter({
         },
       });
       const take = user?.pricing?.features.find(
-        (f) => f.feature === "MANAGER_MULTI_CLUB"
+        (f) => f.feature === "MANAGER_MULTI_CLUB",
       )
         ? undefined
         : 1;
@@ -108,7 +108,7 @@ export const clubRouter = createTRPCRouter({
     ctx.prisma.club.findMany({
       orderBy: { name: "asc" },
       include: { activities: { include: { group: true } }, pages: true },
-    })
+    }),
   ),
   createClub: protectedProcedure
     .input(
@@ -121,7 +121,7 @@ export const clubRouter = createTRPCRouter({
         latitude: z.number(),
         logoId: z.string().cuid().optional(),
         isSite: z.boolean(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       if (
@@ -170,7 +170,7 @@ export const clubRouter = createTRPCRouter({
         name: z.string(),
         address: z.string(),
         logoId: z.string().cuid().nullable(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const club = await ctx.prisma.club.findFirst({
@@ -234,7 +234,7 @@ export const clubRouter = createTRPCRouter({
       z.object({
         id: z.string().cuid(),
         calendarId: z.string().cuid(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       return ctx.prisma.club.update({
@@ -265,7 +265,7 @@ export const clubRouter = createTRPCRouter({
       z.object({
         id: z.string().cuid(),
         activities: z.array(z.string()),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const club = await ctx.prisma.club.findFirst({
@@ -292,7 +292,7 @@ export const clubRouter = createTRPCRouter({
       z.object({
         clubId: z.string().cuid(),
         coachUserId: z.string().cuid(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // const club = await ctx.prisma.club.findFirst({

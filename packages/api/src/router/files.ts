@@ -1,21 +1,20 @@
-import { type UserDocument, UserDocumentType } from "@prisma/client";
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
+import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { UserDocumentType, type UserDocument } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
-import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import {
-  S3Client,
-  GetObjectCommand,
-  DeleteObjectCommand,
-} from "@aws-sdk/client-s3";
-import { env } from "@root/src/env/server.mjs";
 
 const s3 = new S3Client({
   region: "eu-west-3",
   credentials: {
-    accessKeyId: env.AWS_ACCESS_KEY_ID_WSC ?? "",
-    secretAccessKey: env.AWS_SECRET_ACCESS_KEY_WSC ?? "",
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID_WSC ?? "",
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY_WSC ?? "",
   },
 });
 
@@ -25,7 +24,7 @@ const Bucket = "videoach-dev";
 export async function createPost(
   key: string,
   fileType: string,
-  maxSize: number = 1024 * 1024
+  maxSize: number = 1024 * 1024,
 ) {
   return await createPresignedPost(s3, {
     Bucket,
@@ -45,7 +44,7 @@ export async function getDocUrl(userId: string, documentId: string) {
     new GetObjectCommand({
       Bucket,
       Key: `${userId}/${documentId}`,
-    })
+    }),
   );
 }
 
@@ -65,7 +64,7 @@ export const fileRouter = createTRPCRouter({
         fileType: z.string(),
         fileName: z.string(),
         documentType: z.nativeEnum(UserDocumentType),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       if (
@@ -89,7 +88,7 @@ export const fileRouter = createTRPCRouter({
       const presigned = await createPost(
         `${userId}/${document.id}`,
         input.fileType,
-        input.maxSize
+        input.maxSize,
       );
       return { ...presigned, documentId: document.id };
     }),
@@ -103,7 +102,7 @@ export const fileRouter = createTRPCRouter({
           .number()
           .optional()
           .default(1024 * 1024),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       if (
@@ -119,7 +118,7 @@ export const fileRouter = createTRPCRouter({
       const presigned = await createPost(
         `${userId}/${input.fileId}`,
         input.fileType,
-        input.maxSize
+        input.maxSize,
       );
       return { ...presigned };
     }),
@@ -145,7 +144,7 @@ export const fileRouter = createTRPCRouter({
       z.object({
         userId: z.string().cuid(),
         documentType: z.nativeEnum(UserDocumentType).optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       if (
@@ -167,13 +166,13 @@ export const fileRouter = createTRPCRouter({
         documents.map(async (doc) => ({
           ...doc,
           url: await getDocUrl(input.userId, doc.id),
-        }))
+        })),
       );
       return extendedDocuments;
     }),
   deleteUserDocument: protectedProcedure
     .input(
-      z.object({ userId: z.string().cuid(), documentId: z.string().cuid() })
+      z.object({ userId: z.string().cuid(), documentId: z.string().cuid() }),
     )
     .mutation(async ({ ctx, input }) => {
       if (
