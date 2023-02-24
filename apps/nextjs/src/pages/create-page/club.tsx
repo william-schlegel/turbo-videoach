@@ -181,7 +181,7 @@ const PageContent = ({ pageId, clubId, userId }: PageContentProps) => {
             href={`/presentation-page/club/${clubId}/${pageId}`}
             target="_blank"
             referrerPolicy="no-referrer"
-            className="btn-primary btn flex gap-2"
+            className="btn btn-primary flex gap-2"
           >
             {t("page-preview")}
             <i className="bx bx-link-external bx-xs" />
@@ -209,10 +209,10 @@ const PageContent = ({ pageId, clubId, userId }: PageContentProps) => {
           <HeroCreation clubId={clubId} pageId={pageId} userId={userId} />
         )}
         {section === "TITLE" && (
-          <TitleCreation clubId={clubId} pageId={pageId} />
+          <TitleCreation userId={userId} clubId={clubId} pageId={pageId} />
         )}
         {section === "PLANNINGS" && (
-          <PlanningCreation clubId={clubId} pageId={pageId} />
+          <PlanningCreation userId={userId} clubId={clubId} pageId={pageId} />
         )}
         {section === "ACTIVITY_GROUPS" && (
           <ActivityGroupCreation
@@ -222,10 +222,10 @@ const PageContent = ({ pageId, clubId, userId }: PageContentProps) => {
           />
         )}
         {section === "ACTIVITIES" && (
-          <ActivityCreation clubId={clubId} pageId={pageId} />
+          <ActivityCreation userId={userId} clubId={clubId} pageId={pageId} />
         )}
         {section === "OFFERS" && (
-          <OfferCreation clubId={clubId} pageId={pageId} />
+          <OfferCreation userId={userId} clubId={clubId} pageId={pageId} />
         )}
       </div>
     </article>

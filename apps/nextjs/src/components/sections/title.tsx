@@ -15,6 +15,7 @@ import { toast } from "react-toastify";
 import ThemeSelector, { type TThemes } from "../themeSelector";
 
 type TitleCreationProps = {
+  userId: string;
   clubId: string;
   pageId: string;
 };
@@ -28,7 +29,11 @@ type TitleCreationForm = {
 
 const MAX_SIZE = 1024 * 1024;
 
-export const TitleCreation = ({ clubId, pageId }: TitleCreationProps) => {
+export const TitleCreation = ({
+  userId,
+  clubId,
+  pageId,
+}: TitleCreationProps) => {
   const { t } = useTranslation("pages");
   const { register, handleSubmit, control, setValue, reset } =
     useForm<TitleCreationForm>();
@@ -43,7 +48,7 @@ export const TitleCreation = ({ clubId, pageId }: TitleCreationProps) => {
   const [previewTheme, setPreviewTheme] = useState<TThemes>("cupcake");
 
   const querySection = api.pages.getPageSection.useQuery(
-    { pageId, section: "TITLE" },
+    { userId, pageId, section: "TITLE" },
     {
       onSuccess: (data) => {
         if (!data) {
@@ -72,7 +77,11 @@ export const TitleCreation = ({ clubId, pageId }: TitleCreationProps) => {
   const createSection = api.pages.createPageSection.useMutation({
     onSuccess() {
       toast.success(t("section-created"));
-      utils.pages.getPageSection.invalidate({ pageId, section: "TITLE" });
+      utils.pages.getPageSection.invalidate({
+        userId,
+        pageId,
+        section: "TITLE",
+      });
       reset();
       setImagePreview("");
     },
@@ -95,7 +104,11 @@ export const TitleCreation = ({ clubId, pageId }: TitleCreationProps) => {
         data.elements.map((elem) => deleteSectionElement.mutateAsync(elem.id)),
       );
       toast.success(t("section-deleted"));
-      utils.pages.getPageSection.invalidate({ pageId, section: "TITLE" });
+      utils.pages.getPageSection.invalidate({
+        userId,
+        pageId,
+        section: "TITLE",
+      });
       reset();
       setImagePreview("");
     },
@@ -108,7 +121,11 @@ export const TitleCreation = ({ clubId, pageId }: TitleCreationProps) => {
   const updateSectionElement = api.pages.updatePageSectionElement.useMutation({
     onSuccess() {
       toast.success(t("section-updated"));
-      utils.pages.getPageSection.invalidate({ pageId, section: "TITLE" });
+      utils.pages.getPageSection.invalidate({
+        userId,
+        pageId,
+        section: "TITLE",
+      });
     },
     onError(error) {
       toast.error(error.message);
@@ -243,7 +260,7 @@ export const TitleCreation = ({ clubId, pageId }: TitleCreationProps) => {
           <textarea {...register("description")} rows={4} />
 
           <div className="col-span-2 flex justify-between">
-            <button className="btn-primary btn" type="submit">
+            <button className="btn btn-primary" type="submit">
               {t("save-section")}
             </button>
             {updating ? (
@@ -285,13 +302,15 @@ export const TitleCreation = ({ clubId, pageId }: TitleCreationProps) => {
 };
 
 type TitleDisplayProps = {
+  userId: string;
   clubId: string;
   pageId: string;
 };
 
-export const TitleDisplay = ({ pageId }: TitleDisplayProps) => {
+export const TitleDisplay = ({ userId, pageId }: TitleDisplayProps) => {
   const querySection = api.pages.getPageSection.useQuery(
     {
+      userId,
       pageId,
       section: "TITLE",
     },

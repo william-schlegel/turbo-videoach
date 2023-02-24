@@ -17,6 +17,7 @@ import { toast } from "react-toastify";
 import ThemeSelector, { type TThemes } from "../themeSelector";
 
 type PlanningCreationProps = {
+  userId: string;
   clubId: string;
   pageId: string;
 };
@@ -31,14 +32,18 @@ type PlanningFormValues = {
 
 const MAX_SIZE = 1024 * 1024;
 
-export const PlanningCreation = ({ clubId, pageId }: PlanningCreationProps) => {
+export const PlanningCreation = ({
+  userId,
+  clubId,
+  pageId,
+}: PlanningCreationProps) => {
   const { t } = useTranslation("pages");
   const utils = api.useContext();
   const [previewTheme, setPreviewTheme] = useState<TThemes>("cupcake");
 
   const createSection = api.pages.createPageSection.useMutation();
   const querySection = api.pages.getPageSection.useQuery(
-    { pageId, section: "PLANNINGS" },
+    { userId, pageId, section: "PLANNINGS" },
     {
       onSuccess: (data) => {
         if (!data) {
@@ -46,7 +51,11 @@ export const PlanningCreation = ({ clubId, pageId }: PlanningCreationProps) => {
             pageId,
             model: "PLANNINGS",
           });
-          utils.pages.getPageSection.refetch({ pageId, section: "PLANNINGS" });
+          utils.pages.getPageSection.refetch({
+            userId,
+            pageId,
+            section: "PLANNINGS",
+          });
         }
       },
       refetchOnWindowFocus: false,
@@ -77,11 +86,13 @@ export const PlanningCreation = ({ clubId, pageId }: PlanningCreationProps) => {
                   <p>{planning.title}</p>
                   <div className="mt-2 flex items-center justify-between gap-4">
                     <UpdatePlanning
+                      userId={userId}
                       clubId={clubId}
                       pageId={pageId}
                       planningId={planning.id}
                     />
                     <DeletePlanning
+                      userId={userId}
                       clubId={clubId}
                       pageId={pageId}
                       planningId={planning.id}
@@ -91,6 +102,7 @@ export const PlanningCreation = ({ clubId, pageId }: PlanningCreationProps) => {
               ))}
             </div>
             <AddPlanning
+              userId={userId}
               clubId={clubId}
               pageId={pageId}
               sectionId={querySection.data.id}
@@ -117,12 +129,13 @@ export const PlanningCreation = ({ clubId, pageId }: PlanningCreationProps) => {
 };
 
 type PlanningProps = {
+  userId: string;
   pageId: string;
   sectionId: string;
   clubId: string;
 };
 
-function AddPlanning({ clubId, pageId, sectionId }: PlanningProps) {
+function AddPlanning({ userId, clubId, pageId, sectionId }: PlanningProps) {
   const utils = api.useContext();
   const { t } = useTranslation("pages");
   const [close, setClose] = useState(false);
@@ -131,6 +144,7 @@ function AddPlanning({ clubId, pageId, sectionId }: PlanningProps) {
   const createPlanning = api.pages.createPageSectionElement.useMutation({
     onSuccess: () => {
       utils.pages.getPageSection.invalidate({
+        userId,
         pageId,
         section: "PLANNINGS",
       });
@@ -184,12 +198,18 @@ function AddPlanning({ clubId, pageId, sectionId }: PlanningProps) {
 }
 
 type UpdatePlanningProps = {
+  userId: string;
   pageId: string;
   planningId: string;
   clubId: string;
 };
 
-function UpdatePlanning({ clubId, pageId, planningId }: UpdatePlanningProps) {
+function UpdatePlanning({
+  userId,
+  clubId,
+  pageId,
+  planningId,
+}: UpdatePlanningProps) {
   const utils = api.useContext();
   const { t } = useTranslation("pages");
   const [close, setClose] = useState(false);
@@ -217,6 +237,7 @@ function UpdatePlanning({ clubId, pageId, planningId }: UpdatePlanningProps) {
   const updateAG = api.pages.updatePageSectionElement.useMutation({
     onSuccess: () => {
       utils.pages.getPageSection.invalidate({
+        userId,
         pageId,
         section: "PLANNINGS",
       });
@@ -273,13 +294,14 @@ function UpdatePlanning({ clubId, pageId, planningId }: UpdatePlanningProps) {
   );
 }
 
-function DeletePlanning({ pageId, planningId }: UpdatePlanningProps) {
+function DeletePlanning({ userId, pageId, planningId }: UpdatePlanningProps) {
   const utils = api.useContext();
   const { t } = useTranslation("pages");
 
   const deletePlanning = api.pages.deletePageSectionElement.useMutation({
     onSuccess: () => {
       utils.pages.getPageSection.invalidate({
+        userId,
         pageId,
         section: "PLANNINGS",
       });
@@ -494,12 +516,17 @@ function PlanningForm({
 }
 
 type PlanningDisplayProps = {
+  userId: string;
   pageId: string;
 };
 
-export const PlanningDisplayCard = ({ pageId }: PlanningDisplayProps) => {
+export const PlanningDisplayCard = ({
+  userId,
+  pageId,
+}: PlanningDisplayProps) => {
   const querySection = api.pages.getPageSection.useQuery(
     {
+      userId,
       pageId,
       section: "PLANNINGS",
     },

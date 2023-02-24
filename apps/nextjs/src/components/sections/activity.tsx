@@ -19,6 +19,7 @@ import ThemeSelector, { type TThemes } from "../themeSelector";
 type ActivityCreationProps = {
   clubId: string;
   pageId: string;
+  userId: string;
 };
 
 type ActivityForm = {
@@ -31,14 +32,18 @@ type ActivityForm = {
 
 const MAX_SIZE = 1024 * 1024;
 
-export const ActivityCreation = ({ clubId, pageId }: ActivityCreationProps) => {
+export const ActivityCreation = ({
+  userId,
+  clubId,
+  pageId,
+}: ActivityCreationProps) => {
   const { t } = useTranslation("pages");
   const utils = api.useContext();
   const [previewTheme, setPreviewTheme] = useState<TThemes>("cupcake");
 
   const createSection = api.pages.createPageSection.useMutation();
   const querySection = api.pages.getPageSection.useQuery(
-    { pageId, section: "ACTIVITIES" },
+    { userId, pageId, section: "ACTIVITIES" },
     {
       onSuccess: (data) => {
         if (!data) {
@@ -46,7 +51,11 @@ export const ActivityCreation = ({ clubId, pageId }: ActivityCreationProps) => {
             pageId,
             model: "ACTIVITIES",
           });
-          utils.pages.getPageSection.refetch({ pageId, section: "ACTIVITIES" });
+          utils.pages.getPageSection.refetch({
+            userId,
+            pageId,
+            section: "ACTIVITIES",
+          });
         }
       },
       refetchOnWindowFocus: false,
@@ -81,13 +90,25 @@ export const ActivityCreation = ({ clubId, pageId }: ActivityCreationProps) => {
                 >
                   <p>{activity.title}</p>
                   <div className="mt-2 flex items-center justify-between gap-4">
-                    <UpdateActivity pageId={pageId} activityId={activity.id} />
-                    <DeleteActivity pageId={pageId} activityId={activity.id} />
+                    <UpdateActivity
+                      userId={userId}
+                      pageId={pageId}
+                      activityId={activity.id}
+                    />
+                    <DeleteActivity
+                      userId={userId}
+                      pageId={pageId}
+                      activityId={activity.id}
+                    />
                   </div>
                 </div>
               ))}
             </div>
-            <AddActivity pageId={pageId} sectionId={querySection.data.id} />
+            <AddActivity
+              userId={userId}
+              pageId={pageId}
+              sectionId={querySection.data.id}
+            />
           </>
         ) : null}
       </div>
@@ -135,11 +156,12 @@ export const ActivityCreation = ({ clubId, pageId }: ActivityCreationProps) => {
 };
 
 type ActivityProps = {
+  userId: string;
   pageId: string;
   sectionId: string;
 };
 
-function AddActivity({ pageId, sectionId }: ActivityProps) {
+function AddActivity({ userId, pageId, sectionId }: ActivityProps) {
   const utils = api.useContext();
   const { t } = useTranslation("pages");
   const [close, setClose] = useState(false);
@@ -148,6 +170,7 @@ function AddActivity({ pageId, sectionId }: ActivityProps) {
   const createActivity = api.pages.createPageSectionElement.useMutation({
     onSuccess: () => {
       utils.pages.getPageSection.invalidate({
+        userId,
         pageId,
         section: "ACTIVITIES",
       });
@@ -200,11 +223,12 @@ function AddActivity({ pageId, sectionId }: ActivityProps) {
 }
 
 type UpdateActivityProps = {
+  userId: string;
   pageId: string;
   activityId: string;
 };
 
-function UpdateActivity({ pageId, activityId }: UpdateActivityProps) {
+function UpdateActivity({ userId, pageId, activityId }: UpdateActivityProps) {
   const utils = api.useContext();
   const { t } = useTranslation("pages");
   const [close, setClose] = useState(false);
@@ -232,6 +256,7 @@ function UpdateActivity({ pageId, activityId }: UpdateActivityProps) {
   const updateAG = api.pages.updatePageSectionElement.useMutation({
     onSuccess: () => {
       utils.pages.getPageSection.invalidate({
+        userId,
         pageId,
         section: "ACTIVITIES",
       });
@@ -287,13 +312,14 @@ function UpdateActivity({ pageId, activityId }: UpdateActivityProps) {
   );
 }
 
-function DeleteActivity({ pageId, activityId }: UpdateActivityProps) {
+function DeleteActivity({ userId, pageId, activityId }: UpdateActivityProps) {
   const utils = api.useContext();
   const { t } = useTranslation("pages");
 
   const deleteActivity = api.pages.deletePageSectionElement.useMutation({
     onSuccess: () => {
       utils.pages.getPageSection.invalidate({
+        userId,
         pageId,
         section: "ACTIVITIES",
       });
@@ -495,7 +521,7 @@ function ActivityForm({
       <div className="col-span-full mt-4 flex items-center justify-end gap-2">
         <button
           type="button"
-          className="btn-outline btn btn-secondary"
+          className="btn-outline btn-secondary btn"
           onClick={(e) => {
             e.preventDefault();
             reset();
@@ -504,7 +530,7 @@ function ActivityForm({
         >
           {t("common:cancel")}
         </button>
-        <button className="btn btn-primary" type="submit">
+        <button className="btn-primary btn" type="submit">
           {t("common:save")}
         </button>
       </div>
@@ -513,15 +539,18 @@ function ActivityForm({
 }
 
 type ActivityDisplayProps = {
+  userId: string;
   pageId: string;
   groupId: string;
 };
 
 export const ActivityDisplayCard = ({
+  userId,
   pageId,
   groupId,
 }: ActivityDisplayProps) => {
   const querySection = api.pages.getPageSection.useQuery({
+    userId,
     pageId,
     section: "ACTIVITIES",
   });

@@ -60,14 +60,20 @@ function ClubPresentation(
         ) : section.model === "TITLE" ? (
           <TitleDisplay
             key={section.id}
+            userId={managerId}
             clubId={queryPage.data.clubId}
             pageId={props.pageId}
           />
         ) : section.model === "PLANNINGS" ? (
-          <PlanningDisplayCard key={section.id} pageId={props.pageId} />
+          <PlanningDisplayCard
+            key={section.id}
+            userId={managerId}
+            pageId={props.pageId}
+          />
         ) : section.model === "OFFERS" ? (
           <OfferDisplayCard
             key={section.id}
+            userId={managerId}
             pageId={props.pageId}
             clubId={props.clubId}
           />

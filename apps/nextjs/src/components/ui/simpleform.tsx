@@ -10,6 +10,7 @@ import type {
   FieldErrors,
   FieldValues,
   Path,
+  RegisterOptions,
   UseFormRegister,
 } from "react-hook-form";
 import Spinner from "./spinner";
@@ -56,6 +57,11 @@ export default function SimpleForm<T extends FieldValues>({
         fields.map((field) => {
           const fn = field.name as string;
           const isTextArea = field.rows && !isNaN(field.rows) && field.rows > 1;
+          const options: RegisterOptions<T, Path<T>> = {
+            required: field.required ?? false,
+          };
+          if (field.type === "date") options.valueAsDate = true;
+          if (field.type === "number") options.valueAsNumber = true;
           return (
             <Fragment key={fn}>
               {field.type === "checkbox" ? (
@@ -93,11 +99,7 @@ export default function SimpleForm<T extends FieldValues>({
                     ) : field.unit !== undefined ? (
                       <div className="input-group">
                         <input
-                          {...register(fn as Path<T>, {
-                            required: field.required ?? false,
-                            valueAsDate: field.type === "date",
-                            valueAsNumber: field.type === "number",
-                          })}
+                          {...register(fn as Path<T>, options)}
                           type={field.type || "text"}
                           disabled={field.disabled}
                           className="input-bordered input"
@@ -114,11 +116,7 @@ export default function SimpleForm<T extends FieldValues>({
                       />
                     ) : (
                       <input
-                        {...register(fn as Path<T>, {
-                          required: field.required ?? false,
-                          valueAsDate: field.type === "date",
-                          valueAsNumber: field.type === "number",
-                        })}
+                        {...register(fn as Path<T>, options)}
                         type={field.type || "text"}
                         disabled={field.disabled}
                         className="input-bordered input w-full"

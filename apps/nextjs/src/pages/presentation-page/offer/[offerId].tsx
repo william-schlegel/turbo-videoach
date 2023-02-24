@@ -37,7 +37,7 @@ export const getServerSideProps = async ({
 }: GetServerSidePropsContext) => {
   const ssg = createProxySSGHelpers({
     router: appRouter,
-    ctx: await createInnerTRPCContext({ session: null }),
+    ctx: createInnerTRPCContext({ session: null }),
     transformer: superjson,
   });
 

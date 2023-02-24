@@ -20,6 +20,7 @@ import { List } from "~/pages/member/[userId]";
 import ThemeSelector, { type TThemes } from "../themeSelector";
 
 type OfferCreationProps = {
+  userId: string;
   clubId: string;
   pageId: string;
 };
@@ -34,14 +35,18 @@ type OfferFormValues = {
 
 const MAX_SIZE = 1024 * 1024;
 
-export const OfferCreation = ({ clubId, pageId }: OfferCreationProps) => {
+export const OfferCreation = ({
+  userId,
+  clubId,
+  pageId,
+}: OfferCreationProps) => {
   const { t } = useTranslation("pages");
   const utils = api.useContext();
   const [previewTheme, setPreviewTheme] = useState<TThemes>("cupcake");
 
   const createSection = api.pages.createPageSection.useMutation();
   const querySection = api.pages.getPageSection.useQuery(
-    { pageId, section: "OFFERS" },
+    { userId, pageId, section: "OFFERS" },
     {
       onSuccess: (data) => {
         if (!data) {
@@ -49,7 +54,11 @@ export const OfferCreation = ({ clubId, pageId }: OfferCreationProps) => {
             pageId,
             model: "OFFERS",
           });
-          utils.pages.getPageSection.refetch({ pageId, section: "OFFERS" });
+          utils.pages.getPageSection.refetch({
+            userId,
+            pageId,
+            section: "OFFERS",
+          });
         }
       },
       refetchOnWindowFocus: false,
@@ -80,11 +89,13 @@ export const OfferCreation = ({ clubId, pageId }: OfferCreationProps) => {
                   <p>{offer.title}</p>
                   <div className="mt-2 flex items-center justify-between gap-4">
                     <UpdateOffer
+                      userId={userId}
                       clubId={clubId}
                       pageId={pageId}
                       offerId={offer.id}
                     />
                     <DeleteOffer
+                      userId={userId}
                       clubId={clubId}
                       pageId={pageId}
                       offerId={offer.id}
@@ -94,6 +105,7 @@ export const OfferCreation = ({ clubId, pageId }: OfferCreationProps) => {
               ))}
             </div>
             <AddOffer
+              userId={userId}
               clubId={clubId}
               pageId={pageId}
               sectionId={querySection.data.id}
@@ -127,12 +139,13 @@ export const OfferCreation = ({ clubId, pageId }: OfferCreationProps) => {
 };
 
 type OfferProps = {
+  userId: string;
   pageId: string;
   sectionId: string;
   clubId: string;
 };
 
-function AddOffer({ clubId, pageId, sectionId }: OfferProps) {
+function AddOffer({ userId, clubId, pageId, sectionId }: OfferProps) {
   const utils = api.useContext();
   const { t } = useTranslation("pages");
   const [close, setClose] = useState(false);
@@ -141,6 +154,7 @@ function AddOffer({ clubId, pageId, sectionId }: OfferProps) {
   const createOffer = api.pages.createPageSectionElement.useMutation({
     onSuccess: () => {
       utils.pages.getPageSection.invalidate({
+        userId,
         pageId,
         section: "OFFERS",
       });
@@ -193,12 +207,13 @@ function AddOffer({ clubId, pageId, sectionId }: OfferProps) {
 }
 
 type UpdateOfferProps = {
+  userId: string;
   pageId: string;
   offerId: string;
   clubId: string;
 };
 
-function UpdateOffer({ clubId, pageId, offerId }: UpdateOfferProps) {
+function UpdateOffer({ userId, clubId, pageId, offerId }: UpdateOfferProps) {
   const utils = api.useContext();
   const { t } = useTranslation("pages");
   const [close, setClose] = useState(false);
@@ -221,6 +236,7 @@ function UpdateOffer({ clubId, pageId, offerId }: UpdateOfferProps) {
   const updateAG = api.pages.updatePageSectionElement.useMutation({
     onSuccess: () => {
       utils.pages.getPageSection.invalidate({
+        userId,
         pageId,
         section: "OFFERS",
       });
@@ -276,13 +292,14 @@ function UpdateOffer({ clubId, pageId, offerId }: UpdateOfferProps) {
   );
 }
 
-function DeleteOffer({ pageId, offerId }: UpdateOfferProps) {
+function DeleteOffer({ userId, pageId, offerId }: UpdateOfferProps) {
   const utils = api.useContext();
   const { t } = useTranslation("pages");
 
   const deleteOffer = api.pages.deletePageSectionElement.useMutation({
     onSuccess: () => {
       utils.pages.getPageSection.invalidate({
+        userId,
         pageId,
         section: "OFFERS",
       });
@@ -468,13 +485,19 @@ function OfferForm({
 }
 
 type OfferDisplayProps = {
+  userId: string;
   pageId: string;
   clubId: string;
 };
 
-export const OfferDisplayCard = ({ pageId, clubId }: OfferDisplayProps) => {
+export const OfferDisplayCard = ({
+  userId,
+  pageId,
+  clubId,
+}: OfferDisplayProps) => {
   const querySection = api.pages.getPageSection.useQuery(
     {
+      userId,
       pageId,
       section: "OFFERS",
     },

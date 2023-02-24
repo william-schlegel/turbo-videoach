@@ -36,7 +36,11 @@ function ActivityGroup(
       />
       <section className="min-h-screen w-full bg-base-200 p-4">
         <ActivityGroupDisplayElement elementId={props.agId} />
-        <ActivityDisplayCard pageId={props.pageId} groupId={props.agId} />
+        <ActivityDisplayCard
+          userId={queryClub.data?.managerId ?? ""}
+          pageId={props.pageId}
+          groupId={props.agId}
+        />
       </section>
     </div>
   );
@@ -49,7 +53,7 @@ export const getServerSideProps = async ({
 }: GetServerSidePropsContext) => {
   const ssg = createProxySSGHelpers({
     router: appRouter,
-    ctx: await createInnerTRPCContext({ session: null }),
+    ctx: createInnerTRPCContext({ session: null }),
     transformer: superjson,
   });
 
