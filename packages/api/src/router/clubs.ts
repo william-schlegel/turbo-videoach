@@ -67,6 +67,7 @@ export const clubRouter = createTRPCRouter({
       }
       if (!myClub) return { pages: [], logoUrl };
       return {
+        managerId: myClub.managerId,
         pages: myClub.pages.map((p) => ({
           id: p.id,
           name: p.name,

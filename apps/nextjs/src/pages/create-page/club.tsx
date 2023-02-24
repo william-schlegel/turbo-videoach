@@ -111,7 +111,9 @@ function ClubPage({
             ))}
           </ul>
         </aside>
-        {pageId ? <PageContent clubId={clubId} pageId={pageId} /> : null}
+        {pageId ? (
+          <PageContent clubId={clubId} pageId={pageId} userId={userId} />
+        ) : null}
       </div>
     </Layout>
   );
@@ -122,9 +124,10 @@ export default ClubPage;
 type PageContentProps = {
   pageId: string;
   clubId: string;
+  userId: string;
 };
 
-const PageContent = ({ pageId, clubId }: PageContentProps) => {
+const PageContent = ({ pageId, clubId, userId }: PageContentProps) => {
   const queryPage = api.pages.getPageById.useQuery(pageId, {
     enabled: isCUID(pageId),
     refetchOnWindowFocus: false,
@@ -202,7 +205,9 @@ const PageContent = ({ pageId, clubId }: PageContentProps) => {
         ))}
       </div>
       <div className="w-full">
-        {section === "HERO" && <HeroCreation clubId={clubId} pageId={pageId} />}
+        {section === "HERO" && (
+          <HeroCreation clubId={clubId} pageId={pageId} userId={userId} />
+        )}
         {section === "TITLE" && (
           <TitleCreation clubId={clubId} pageId={pageId} />
         )}
@@ -210,7 +215,11 @@ const PageContent = ({ pageId, clubId }: PageContentProps) => {
           <PlanningCreation clubId={clubId} pageId={pageId} />
         )}
         {section === "ACTIVITY_GROUPS" && (
-          <ActivityGroupCreation clubId={clubId} pageId={pageId} />
+          <ActivityGroupCreation
+            clubId={clubId}
+            pageId={pageId}
+            userId={userId}
+          />
         )}
         {section === "ACTIVITIES" && (
           <ActivityCreation clubId={clubId} pageId={pageId} />

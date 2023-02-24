@@ -33,7 +33,7 @@ export const Themes = [
   "coffee",
   "winter",
 ] as const;
-export type TThemes = typeof Themes[number];
+export type TThemes = (typeof Themes)[number];
 
 type Props = {
   onSelect: (t: TThemes) => void;
@@ -45,6 +45,7 @@ const ThemeSelector = ({ onSelect, onSave }: Props) => {
   const { t } = useTranslation("pages");
 
   useEffect(() => {
+    console.log("theme", theme);
     onSelect(theme);
   }, [theme, onSelect]);
 

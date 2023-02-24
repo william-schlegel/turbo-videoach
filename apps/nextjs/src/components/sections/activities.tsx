@@ -18,6 +18,7 @@ import { toast } from "react-toastify";
 import ThemeSelector, { type TThemes } from "../themeSelector";
 
 type ActivityGroupCreationProps = {
+  userId: string;
   clubId: string;
   pageId: string;
 };
@@ -37,6 +38,7 @@ type ActivityForm = {
 const MAX_SIZE = 1024 * 1024;
 
 export const ActivityGroupCreation = ({
+  userId,
   clubId,
   pageId,
 }: ActivityGroupCreationProps) => {
@@ -49,8 +51,9 @@ export const ActivityGroupCreation = ({
   const [updating, setUpdating] = useState(false);
 
   const querySection = api.pages.getPageSection.useQuery(
-    { pageId, section: "ACTIVITY_GROUPS" },
+    { pageId, userId, section: "ACTIVITY_GROUPS" },
     {
+      enabled: isCUID(pageId) && isCUID(userId),
       onSuccess: (data) => {
         if (!data) {
           setUpdating(false);
@@ -70,6 +73,7 @@ export const ActivityGroupCreation = ({
       toast.success(t("section-created"));
       utils.pages.getPageSection.invalidate({
         pageId,
+        userId,
         section: "ACTIVITY_GROUPS",
       });
       reset();
@@ -83,6 +87,7 @@ export const ActivityGroupCreation = ({
       toast.success(t("section-created"));
       utils.pages.getPageSection.invalidate({
         pageId,
+        userId,
         section: "ACTIVITY_GROUPS",
       });
       reset();
@@ -97,6 +102,7 @@ export const ActivityGroupCreation = ({
       toast.success(t("section-deleted"));
       utils.pages.getPageSection.invalidate({
         pageId,
+        userId,
         section: "ACTIVITY_GROUPS",
       });
       reset();
@@ -157,7 +163,7 @@ export const ActivityGroupCreation = ({
             className="input-bordered input w-full"
           />
           <div className="col-span-2 flex justify-between">
-            <button className="btn btn-primary" type="submit">
+            <button className="btn-primary btn" type="submit">
               {t("save-section")}
             </button>
             {updating ? (
@@ -186,10 +192,12 @@ export const ActivityGroupCreation = ({
                   <p>{activity.title}</p>
                   <div className="mt-2 flex items-center justify-between gap-4">
                     <UpdateActivityGroup
+                      userId={userId}
                       pageId={pageId}
                       activityId={activity.id}
                     />
                     <DeleteActivityGroup
+                      userId={userId}
                       pageId={pageId}
                       activityId={activity.id}
                     />
@@ -198,6 +206,7 @@ export const ActivityGroupCreation = ({
               ))}
             </div>
             <AddActivityGroup
+              userId={userId}
               pageId={pageId}
               sectionId={querySection.data.id}
             />
@@ -226,20 +235,21 @@ export const ActivityGroupCreation = ({
 };
 
 type ActivityProps = {
+  userId: string;
   pageId: string;
   sectionId: string;
 };
 
-function AddActivityGroup({ pageId, sectionId }: ActivityProps) {
+function AddActivityGroup({ userId, pageId, sectionId }: ActivityProps) {
   const utils = api.useContext();
   const { t } = useTranslation("pages");
   const [close, setClose] = useState(false);
-  const { data: sessionData } = api.auth.getSession.useQuery();
 
   const createAG = api.pages.createPageSectionElement.useMutation({
     onSuccess: () => {
       utils.pages.getPageSection.invalidate({
         pageId,
+        userId,
         section: "ACTIVITY_GROUPS",
       });
       toast.success(t("activity-group.activity-created"));
@@ -248,11 +258,7 @@ function AddActivityGroup({ pageId, sectionId }: ActivityProps) {
       toast.error(error.message);
     },
   });
-  const saveImage = useWriteFile(
-    sessionData?.user?.id ?? "",
-    "IMAGE",
-    MAX_SIZE,
-  );
+  const saveImage = useWriteFile(userId, "IMAGE", MAX_SIZE);
 
   async function handleSubmit(data: ActivityForm) {
     let documentId: string | undefined = undefined;
@@ -289,15 +295,19 @@ function AddActivityGroup({ pageId, sectionId }: ActivityProps) {
 }
 
 type UpdateActivityGroupProps = {
+  userId: string;
   pageId: string;
   activityId: string;
 };
 
-function UpdateActivityGroup({ pageId, activityId }: UpdateActivityGroupProps) {
+function UpdateActivityGroup({
+  userId,
+  pageId,
+  activityId,
+}: UpdateActivityGroupProps) {
   const utils = api.useContext();
   const { t } = useTranslation("pages");
   const [close, setClose] = useState(false);
-  const { data: sessionData } = api.auth.getSession.useQuery();
   const [initialData, setInitialData] = useState<ActivityForm | undefined>();
   const queryActivity = api.pages.getPageSectionElementById.useQuery(
     activityId,
@@ -318,6 +328,7 @@ function UpdateActivityGroup({ pageId, activityId }: UpdateActivityGroupProps) {
   const updateAG = api.pages.updatePageSectionElement.useMutation({
     onSuccess: () => {
       utils.pages.getPageSection.invalidate({
+        userId,
         pageId,
         section: "ACTIVITY_GROUPS",
       });
@@ -327,11 +338,7 @@ function UpdateActivityGroup({ pageId, activityId }: UpdateActivityGroupProps) {
       toast.error(error.message);
     },
   });
-  const saveImage = useWriteFile(
-    sessionData?.user?.id ?? "",
-    "IMAGE",
-    MAX_SIZE,
-  );
+  const saveImage = useWriteFile(userId, "IMAGE", MAX_SIZE);
 
   async function handleSubmit(data: ActivityForm) {
     let documentId: string | undefined = undefined;
@@ -370,13 +377,18 @@ function UpdateActivityGroup({ pageId, activityId }: UpdateActivityGroupProps) {
   );
 }
 
-function DeleteActivityGroup({ pageId, activityId }: UpdateActivityGroupProps) {
+function DeleteActivityGroup({
+  userId,
+  pageId,
+  activityId,
+}: UpdateActivityGroupProps) {
   const utils = api.useContext();
   const { t } = useTranslation("pages");
 
   const deleteActivity = api.pages.deletePageSectionElement.useMutation({
     onSuccess: () => {
       utils.pages.getPageSection.invalidate({
+        userId,
         pageId,
         section: "ACTIVITY_GROUPS",
       });
@@ -527,7 +539,7 @@ function ActivityGroupForm({
       <div className="col-span-full mt-4 flex items-center justify-end gap-2">
         <button
           type="button"
-          className="btn-outline btn btn-secondary"
+          className="btn-outline btn-secondary btn"
           onClick={(e) => {
             e.preventDefault();
             reset();
@@ -536,7 +548,7 @@ function ActivityGroupForm({
         >
           {t("common:cancel")}
         </button>
-        <button className="btn btn-primary" type="submit">
+        <button className="btn-primary btn" type="submit">
           {t("common:save")}
         </button>
       </div>
@@ -545,13 +557,16 @@ function ActivityGroupForm({
 }
 
 type ActivityGroupDisplayProps = {
+  userId: string;
   pageId: string;
 };
 
 export const ActivityGroupDisplayCard = ({
+  userId,
   pageId,
 }: ActivityGroupDisplayProps) => {
   const querySection = api.pages.getPageSection.useQuery({
+    userId,
     pageId,
     section: "ACTIVITY_GROUPS",
   });
@@ -650,7 +665,7 @@ function ActivityGroupContentCard({
                 {/* <p>{activity.content}</p> */}
                 <div className="card-actions mt-auto justify-end">
                   <Link
-                    className={`btn btn-primary ${
+                    className={`btn-primary btn ${
                       preview ? "btn-xs max-w-full overflow-hidden text-xs" : ""
                     }`}
                     href={

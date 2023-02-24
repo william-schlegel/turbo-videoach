@@ -1,9 +1,9 @@
 import {
-  type CoachingLevel,
-  type CoachingPrice,
   PageSectionElementType,
   PageSectionModel,
   PageTarget,
+  type CoachingLevel,
+  type CoachingPrice,
 } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -66,7 +66,7 @@ export const pageRouter = createTRPCRouter({
     .query(({ ctx, input }) =>
       ctx.prisma.page.findMany({
         where: { clubId: input },
-      })
+      }),
     ),
   getPageForCoach: protectedProcedure
     .input(z.string().cuid())
@@ -118,14 +118,15 @@ export const pageRouter = createTRPCRouter({
             },
           },
         },
-      })
+      }),
     ),
   getPageSection: publicProcedure
     .input(
       z.object({
+        userId: z.string().cuid(),
         pageId: z.string().cuid(),
         section: z.nativeEnum(PageSectionModel),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const section = await ctx.prisma.pageSection.findFirst({
@@ -146,10 +147,9 @@ export const pageRouter = createTRPCRouter({
         userId: string;
         url: string;
       }[] = [];
-      const userId = section?.page.club?.managerId ?? "";
       for (const elem of section?.elements ?? []) {
         for (const doc of elem.images) {
-          const url = await getDocUrl(userId, doc.id);
+          const url = await getDocUrl(input.userId, doc.id);
           if (url)
             images.push({
               elemId: elem.id,
@@ -186,7 +186,7 @@ export const pageRouter = createTRPCRouter({
       z.object({
         pageId: z.string().cuid(),
         section: z.nativeEnum(PageSectionModel),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const section = await ctx.prisma.pageSection.findFirst({
@@ -244,7 +244,7 @@ export const pageRouter = createTRPCRouter({
     .mutation(({ ctx, input }) =>
       ctx.prisma.page.create({
         data: input,
-      })
+      }),
     ),
   updatePage: protectedProcedure
     .input(PageObject.omit({ clubId: true }))
@@ -254,12 +254,12 @@ export const pageRouter = createTRPCRouter({
         data: {
           name: input.name,
         },
-      })
+      }),
     ),
   deletePage: protectedProcedure.input(z.string()).mutation(({ ctx, input }) =>
     ctx.prisma.page.delete({
       where: { id: input },
-    })
+    }),
   ),
   createPageSection: protectedProcedure
     .input(PageSectionObject.omit({ id: true }))
@@ -271,7 +271,7 @@ export const pageRouter = createTRPCRouter({
           title: input.title,
           subTitle: input.subtitle,
         },
-      })
+      }),
     ),
   updatePageSection: protectedProcedure
     .input(PageSectionObject.partial())
@@ -286,11 +286,11 @@ export const pageRouter = createTRPCRouter({
           title: input.title,
           subTitle: input.subtitle,
         },
-      })
+      }),
     ),
   deletePageSection: protectedProcedure
     .input(
-      z.object({ pageId: z.string().cuid(), sectionId: z.string().cuid() })
+      z.object({ pageId: z.string().cuid(), sectionId: z.string().cuid() }),
     )
     .mutation(async ({ ctx, input }) => {
       return ctx.prisma.pageSection.delete({
@@ -318,11 +318,11 @@ export const pageRouter = createTRPCRouter({
           sectionId: input.sectionId,
           optionValue: input.optionValue,
         },
-      })
+      }),
     ),
   updatePageSectionElement: protectedProcedure
     .input(
-      PageSectionElementObject.omit({ sectionId: true, elementType: true })
+      PageSectionElementObject.omit({ sectionId: true, elementType: true }),
     )
     .mutation(({ ctx, input }) =>
       ctx.prisma.pageSectionElement.update({
@@ -339,7 +339,7 @@ export const pageRouter = createTRPCRouter({
           subTitle: input.subTitle,
           optionValue: input.optionValue,
         },
-      })
+      }),
     ),
   deletePageSectionElement: protectedProcedure
     .input(z.string())
@@ -349,7 +349,7 @@ export const pageRouter = createTRPCRouter({
         include: {
           images: true,
         },
-      })
+      }),
     ),
   getClubPage: publicProcedure
     .input(z.string())
@@ -435,7 +435,7 @@ export const pageRouter = createTRPCRouter({
         pageData?.coachData?.page?.sections
           .find((s) => s.model === "HERO")
           ?.elements.filter((e) => e.elementType === "OPTION")
-          .map((o) => [o.title, o.optionValue])
+          .map((o) => [o.title, o.optionValue]),
       );
       const activities =
         pageData?.coachData?.coachingActivities.map((a) => ({
@@ -444,7 +444,7 @@ export const pageRouter = createTRPCRouter({
         })) ?? [];
       const features = pageData?.pricing?.features ?? [];
       const certificationOk = !!features.find(
-        (f) => f.feature === "COACH_CERTIFICATION"
+        (f) => f.feature === "COACH_CERTIFICATION",
       );
 
       const certifications = certificationOk
@@ -455,11 +455,11 @@ export const pageRouter = createTRPCRouter({
         : [];
       const offersOk = !!features.find((f) => f.feature === "COACH_OFFER");
       const offerCompaniesOk = !!features.find(
-        (f) => f.feature === "COACH_OFFER_COMPANY"
+        (f) => f.feature === "COACH_OFFER_COMPANY",
       );
       const offers = offersOk
         ? pageData?.coachData?.coachingPrices.filter((c) =>
-            offerCompaniesOk ? true : c.target === "INDIVIDUAL"
+            offerCompaniesOk ? true : c.target === "INDIVIDUAL",
           ) ?? []
         : [];
 
@@ -510,7 +510,7 @@ export const pageRouter = createTRPCRouter({
       });
       const features = user?.pricing?.features ?? [];
       const certificationOk = !!features.find(
-        (f) => f.feature === "COACH_CERTIFICATION"
+        (f) => f.feature === "COACH_CERTIFICATION",
       );
       const certifications = certificationOk
         ? user?.coachData?.certifications.map((c) => ({
@@ -521,11 +521,11 @@ export const pageRouter = createTRPCRouter({
 
       const offersOk = !!features.find((f) => f.feature === "COACH_OFFER");
       const offerCompaniesOk = !!features.find(
-        (f) => f.feature === "COACH_OFFER_COMPANY"
+        (f) => f.feature === "COACH_OFFER_COMPANY",
       );
       const offers = offersOk
         ? user?.coachData?.coachingPrices.filter((c) =>
-            offerCompaniesOk ? true : c.target === "INDIVIDUAL"
+            offerCompaniesOk ? true : c.target === "INDIVIDUAL",
           ) ?? []
         : [];
       return {
@@ -544,14 +544,14 @@ export const pageRouter = createTRPCRouter({
       ctx.prisma.page.update({
         where: { id: input.pageId },
         data: { published: input.published },
-      })
+      }),
     ),
   updatePageStyleForCoach: protectedProcedure
     .input(
       z.object({
         userId: z.string().cuid(),
         pageStyle: z.string(),
-      })
+      }),
     )
     .mutation(({ ctx, input }) =>
       ctx.prisma.userCoach.update({
@@ -559,14 +559,14 @@ export const pageRouter = createTRPCRouter({
         data: {
           pageStyle: input.pageStyle,
         },
-      })
+      }),
     ),
   updatePageStyleForClub: protectedProcedure
     .input(
       z.object({
         clubId: z.string().cuid(),
         pageStyle: z.string(),
-      })
+      }),
     )
     .mutation(({ ctx, input }) =>
       ctx.prisma.club.update({
@@ -574,6 +574,6 @@ export const pageRouter = createTRPCRouter({
         data: {
           pageStyle: input.pageStyle,
         },
-      })
+      }),
     ),
 });

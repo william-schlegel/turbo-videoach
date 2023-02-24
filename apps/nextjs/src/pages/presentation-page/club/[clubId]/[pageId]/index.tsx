@@ -16,6 +16,7 @@ import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Head from "next/head";
 import superjson from "superjson";
 import nextI18nConfig from "~/../next-i18next.config.mjs";
+import Spinner from "~/components/ui/spinner";
 
 function ClubPresentation(
   props: InferGetServerSidePropsType<typeof getServerSideProps>,
@@ -29,6 +30,8 @@ function ClubPresentation(
       enabled: isCUID(props.clubId),
     },
   );
+  if (queryPage.isLoading || queryClub.isLoading) return <Spinner />;
+  const managerId = queryClub.data?.managerId ?? "";
 
   return (
     <div data-theme={queryPage.data?.theme ?? "light"}>
@@ -46,9 +49,14 @@ function ClubPresentation(
             key={section.id}
             clubId={queryPage.data.clubId}
             pageId={props.pageId}
+            userId={managerId}
           />
         ) : section.model === "ACTIVITY_GROUPS" ? (
-          <ActivityGroupDisplayCard key={section.id} pageId={props.pageId} />
+          <ActivityGroupDisplayCard
+            key={section.id}
+            pageId={props.pageId}
+            userId={managerId}
+          />
         ) : section.model === "TITLE" ? (
           <TitleDisplay
             key={section.id}
@@ -77,7 +85,7 @@ export const getServerSideProps = async ({
 }: GetServerSidePropsContext) => {
   const ssg = createProxySSGHelpers({
     router: appRouter,
-    ctx: await createInnerTRPCContext({ session: null }),
+    ctx: createInnerTRPCContext({ session: null }),
     transformer: superjson,
   });
 

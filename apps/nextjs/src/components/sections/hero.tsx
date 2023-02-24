@@ -18,6 +18,7 @@ import { toast } from "react-toastify";
 import ThemeSelector, { type TThemes } from "../themeSelector";
 
 type HeroCreationProps = {
+  userId: string;
   clubId: string;
   pageId: string;
 };
@@ -36,7 +37,7 @@ type HeroCreationForm = {
 
 const MAX_SIZE = 1024 * 1024;
 
-export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
+export const HeroCreation = ({ userId, clubId, pageId }: HeroCreationProps) => {
   const { t } = useTranslation("pages");
   const { register, handleSubmit, getValues, control, setValue, reset } =
     useForm<HeroCreationForm>();
@@ -51,7 +52,7 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
   const { getSectionName, getSections } = usePageSection();
 
   const querySection = api.pages.getPageSection.useQuery(
-    { pageId, section: "HERO" },
+    { userId, pageId, section: "HERO" },
     {
       onSuccess: (data) => {
         if (!data) {
@@ -93,7 +94,11 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
   const createSection = api.pages.createPageSection.useMutation({
     onSuccess() {
       toast.success(t("section-created"));
-      utils.pages.getPageSection.invalidate({ pageId, section: "HERO" });
+      utils.pages.getPageSection.invalidate({
+        userId,
+        pageId,
+        section: "HERO",
+      });
       reset();
       setImagePreview("");
     },
@@ -116,7 +121,11 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
         data.elements.map((elem) => deleteSectionElement.mutateAsync(elem.id)),
       );
       toast.success(t("section-deleted"));
-      utils.pages.getPageSection.invalidate({ pageId, section: "HERO" });
+      utils.pages.getPageSection.invalidate({
+        userId,
+        pageId,
+        section: "HERO",
+      });
       reset();
       setImagePreview("");
     },
@@ -129,7 +138,11 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
   const updateSectionElement = api.pages.updatePageSectionElement.useMutation({
     onSuccess() {
       toast.success(t("section-updated"));
-      utils.pages.getPageSection.invalidate({ pageId, section: "HERO" });
+      utils.pages.getPageSection.invalidate({
+        userId,
+        pageId,
+        section: "HERO",
+      });
     },
     onError(error) {
       toast.error(error.message);
@@ -412,12 +425,14 @@ export const HeroCreation = ({ clubId, pageId }: HeroCreationProps) => {
 };
 
 type HeroDisplayProps = {
+  userId: string;
   clubId: string;
   pageId: string;
 };
 
-export const HeroDisplay = ({ clubId, pageId }: HeroDisplayProps) => {
+export const HeroDisplay = ({ userId, clubId, pageId }: HeroDisplayProps) => {
   const querySection = api.pages.getPageSection.useQuery({
+    userId,
     pageId,
     section: "HERO",
   });

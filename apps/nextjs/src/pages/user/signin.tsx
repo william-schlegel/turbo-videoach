@@ -34,6 +34,8 @@ export default function SignIn({
 
   const signInEmail = router.query.email;
   const signInCredentials = router.query.password;
+  const callback = router.query.callback as string | undefined;
+
   if (signInEmail)
     return (
       <div
@@ -76,7 +78,12 @@ export default function SignIn({
                   <button
                     className="btn-outline btn w-full"
                     key={provider.name}
-                    onClick={() => signIn(provider.id, { redirect: true })}
+                    onClick={() =>
+                      signIn(provider.id, {
+                        redirect: true,
+                        callbackUrl: callback ?? "/",
+                      })
+                    }
                   >
                     {t("signin.connect-with-account")} {provider.name}
                   </button>
@@ -84,7 +91,9 @@ export default function SignIn({
             : null}
           <div className="divider">{t("signin.or")}</div>
           <form
-            onSubmit={() => signIn("email", { email, redirect: true })}
+            onSubmit={() =>
+              signIn("email", { email, redirect: true, callbackUrl: "/" })
+            }
             className="grid grid-cols-[auto,1fr] gap-2"
           >
             <label className="required">{t("signin.my-email")}</label>
@@ -106,7 +115,12 @@ export default function SignIn({
           <div className="divider">{t("signin.or")}</div>
           <form
             onSubmit={() =>
-              signIn("credentials", { email, password, redirect: true })
+              signIn("credentials", {
+                email,
+                password,
+                redirect: true,
+                callbackUrl: "/",
+              })
             }
             className="grid grid-cols-[auto,1fr] gap-2"
           >

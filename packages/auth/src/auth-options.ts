@@ -45,9 +45,10 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
-    redirect() {
-      return "/";
-    },
+    // redirect({ url, baseUrl }) {
+    //   console.log("{url, baseUrl}", { url, baseUrl });
+    //   return url;
+    // },
   },
   // Configure one or more authentication providers
   adapter: PrismaAdapter(prisma),

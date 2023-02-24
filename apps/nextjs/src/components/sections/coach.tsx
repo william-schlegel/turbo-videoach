@@ -18,6 +18,7 @@ import type { SubmitHandler } from "react-hook-form";
 import { useForm, useWatch } from "react-hook-form";
 import { Layer, Map as MapComponent, Source } from "react-map-gl";
 import { toast } from "react-toastify";
+import { ContactMe } from "../modals/contactMe";
 import ThemeSelector, { type TThemes } from "../themeSelector";
 import { OfferBadge } from "./coachOffer";
 
@@ -60,7 +61,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
     },
   });
   const querySection = api.pages.getPageSection.useQuery(
-    { pageId, section: "HERO" },
+    { userId, pageId, section: "HERO" },
     {
       onSuccess: (data) => {
         if (!data) return;
@@ -291,8 +292,7 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
               userName={queryCoach.data?.coachData?.publicName}
               info={fields.subtitle}
               description={fields.description}
-              email={queryCoach.data?.email}
-              phone={queryCoach.data?.phone}
+              coachId={userId}
               preview
             />
             <CertificationsAndActivities
@@ -334,9 +334,10 @@ export const CoachCreation = ({ userId, pageId }: CoachCreationProps) => {
 
 type CoachDisplayProps = {
   pageId: string;
+  userId: string;
 };
 
-export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
+export const CoachDisplay = ({ pageId, userId }: CoachDisplayProps) => {
   const queryPage = api.pages.getCoachPage.useQuery(pageId);
   // const pageData = queryPage.data?.pageData;
   const hero = queryPage.data?.hero;
@@ -366,8 +367,7 @@ export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
         userName={queryPage.data?.publicName}
         info={hero?.subTitle}
         description={hero?.content}
-        email={queryPage.data?.email}
-        phone={queryPage.data?.phone}
+        coachId={userId}
       />
       <CertificationsAndActivities
         withActivities={options.get("activities") === "yes"}
@@ -399,8 +399,7 @@ export const CoachDisplay = ({ pageId }: CoachDisplayProps) => {
 type PhotoSectionProps = {
   imageSrc?: string | null;
   userName?: string | null;
-  phone?: string | null;
-  email?: string | null;
+  coachId?: string | null;
   info?: string | null;
   description?: string | null;
   preview?: boolean;
@@ -412,9 +411,9 @@ function PhotoSection({
   info,
   description,
   preview = false,
-  email,
-  phone,
+  coachId,
 }: PhotoSectionProps) {
+  const { data: sessionData } = api.auth.getSession.useQuery();
   const { t } = useTranslation("pages");
 
   return (
@@ -454,31 +453,27 @@ function PhotoSection({
           {info}
         </p>
         <p className="text-neutral-content">{description}</p>
-        {email ? (
-          <a
-            href={`mailto:${email}`}
-            target="_blank"
-            rel="noreferrer"
-            className={`btn-primary btn-block btn ${
-              preview ? "btn-sm my-2 text-xs" : "btn-lg my-4 text-base"
-            } gap-4`}
-          >
-            {t("coach.contact-me-email")}
-            <i className={`bx bx-envelope ${preview ? "bx-xs" : "bx-lg"}`} />
-          </a>
-        ) : null}
-        {phone ? (
-          <a
-            href={`tel:${phone}`}
-            target="_blank"
-            rel="noreferrer"
-            className={`btn-outline btn-secondary btn-block btn ${
-              preview ? "btn-sm my-2 text-xs" : "btn-lg my-4 text-base"
-            } gap-4`}
-          >
-            {t("coach.contact-me-phone")}
-            <i className={`bx bx-phone ${preview ? "bx-xs" : "bx-lg"}`} />
-          </a>
+        {coachId ? (
+          preview ? (
+            <span className="btn-primary btn-sm btn mt-4">
+              <i className="bx bx-envelope bx-xs" />
+              {t("coach.contact-me")}
+            </span>
+          ) : sessionData?.user ? (
+            <ContactMe coachId={coachId} userId={sessionData.user.id} />
+          ) : (
+            <>
+              <p>{t("coach.message-no-account")}</p>
+              <Link
+                href={`/user/signin?callback=${encodeURIComponent(
+                  location.href,
+                )}`}
+                className="btn-primary btn"
+              >
+                {t("coach.connect")}
+              </Link>
+            </>
+          )
         ) : null}
       </div>
     </section>

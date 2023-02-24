@@ -5,5 +5,25 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
   "eslint.rules.customizations": [{ "rule": "*", "severity": "warn" }],
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#b4cd95",
+    "activityBar.background": "#b4cd95",
+    "activityBar.foreground": "#15202b",
+    "activityBar.inactiveForeground": "#15202b99",
+    "activityBarBadge.background": "#5284ad",
+    "activityBarBadge.foreground": "#e7e7e7",
+    "commandCenter.border": "#15202b99",
+    "sash.hoverBorder": "#b4cd95",
+    "statusBar.background": "#9cbd72",
+    "statusBar.foreground": "#15202b",
+    "statusBarItem.hoverBackground": "#83ac50",
+    "statusBarItem.remoteBackground": "#9cbd72",
+    "statusBarItem.remoteForeground": "#15202b",
+    "titleBar.activeBackground": "#9cbd72",
+    "titleBar.activeForeground": "#15202b",
+    "titleBar.inactiveBackground": "#9cbd7299",
+    "titleBar.inactiveForeground": "#15202b99"
+  },
+  "peacock.color": "#9cbd72"
 }
