@@ -1,7 +1,6 @@
 import { Role } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { createToken, streamchatClient } from "../streamchat";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { getDocUrl } from "./files";
 
@@ -156,11 +155,13 @@ export const clubRouter = createTRPCRouter({
 
       // create the channel for the club
 
-      const channel = streamchatClient.channel("messaging", club.id, {
-        name: input.name,
-        created_by_id: input.userId,
+      await ctx.prisma.messageChannel.create({
+        data: {
+          ownerId: input.userId,
+          name: input.name,
+          type: "CLUB",
+        },
       });
-      await channel.create();
 
       return club;
     }),
@@ -211,23 +212,23 @@ export const clubRouter = createTRPCRouter({
         ctx.prisma.userDocument.delete({ where: { id: initialLogoId } });
       }
 
-      if (club) {
-        // create the channel for the club
-        let token = club.manager.user.chatToken;
-        if (!token) {
-          token = createToken(club.managerId);
-          await ctx.prisma.user.update({
-            where: { id: club.managerId },
-            data: { chatToken: token },
-          });
-        }
-        await streamchatClient.connectUser({ id: club.managerId }, token);
-        const channel = streamchatClient.channel("messaging", club.id, {
-          name: input.name,
-          created_by_id: club.managerId,
-        });
-        await channel.create();
-      }
+      // if (club) {
+      //   // create the channel for the club
+      //   let token = club.manager.user.chatToken;
+      //   if (!token) {
+      //     token = createToken(club.managerId);
+      //     await ctx.prisma.user.update({
+      //       where: { id: club.managerId },
+      //       data: { chatToken: token },
+      //     });
+      //   }
+      //   await streamchatClient.connectUser({ id: club.managerId }, token);
+      //   const channel = streamchatClient.channel("messaging", club.id, {
+      //     name: input.name,
+      //     created_by_id: club.managerId,
+      //   });
+      //   await channel.create();
+      // }
       return updated;
     }),
   updateClubCalendar: protectedProcedure

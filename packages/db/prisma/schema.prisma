@@ -90,9 +90,13 @@ model User {
   coachData         UserCoach?         @relation("coach-user")
   managerData       UserManager?       @relation("manager-user")
   reservations      Reservation[]
-  chatToken         String?
   notificationsTo   UserNotification[] @relation("user-to")
   notificationsFrom UserNotification[] @relation("user-from")
+  ownedChannel      MessageChannel[]   @relation("channel-owner")
+  channels          MessageChannel[]   @relation("channel-user")
+  messages          Message[]
+  reactions         MessageReaction[]
+  messageViews      MessageView[]
 
   @@index([pricingId])
 }
@@ -123,6 +127,7 @@ model UserCoach {
   plannings          Planning[]
   clubs              Club[]             @relation("coach-club")
   marketPlaceOffers  CoachMarketPlace[]
+  channel            MessageChannel?
 
   @@index([userId])
 }
@@ -186,6 +191,7 @@ model UserDocument {
   pageSectionElement PageSectionElement[]
   club               Club?
   event              Event?
+  groupImage         MessageChannel?
 
   @@index([userId])
 }
@@ -250,6 +256,7 @@ model Club {
   subscriptions      Subscription[]
   events             Event[]
   marketPlaceSearchs CoachMarketPlace[]
+  channel            MessageChannel?
 
   @@index([managerId])
   @@index([logoId])
@@ -813,4 +820,88 @@ model CoachMarketPlace {
 
   @@index([clubId])
   @@index([coachId])
+}
+
+// ----------------------------------------------------------------------------------------------
+
+//                             MESSAGING
+
+// ----------------------------------------------------------------------------------------------
+
+enum ChannelType {
+  PRIVATE
+  CLUB
+  COACH
+  GROUP
+}
+
+model MessageChannel {
+  id           String        @id @default(cuid())
+  name         String
+  type         ChannelType   @default(PRIVATE)
+  groupImageId String?       @unique
+  groupImage   UserDocument? @relation(fields: [groupImageId], references: [id])
+  clubId       String?       @unique
+  club         Club?         @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  coachId      String?       @unique
+  coach        UserCoach?    @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  ownerId      String
+  owner        User          @relation(fields: [ownerId], references: [id], name: "channel-owner", onDelete: Cascade)
+  users        User[]        @relation("channel-user")
+  messages     Message[]
+  messageViews MessageView[]
+
+  @@index([groupImageId])
+  @@index([clubId])
+  @@index([ownerId])
+}
+
+enum MessageReactionType {
+  LIKE
+  LOVE
+  LOL
+  WOAH
+  GRRR
+  SAD
+  CHECK
+}
+
+model Message {
+  id           String            @id @default(cuid())
+  message      String
+  fromId       String
+  from         User              @relation(fields: [fromId], references: [id], onDelete: Cascade)
+  channelId    String
+  channel      MessageChannel    @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  messageRefId String?
+  reactions    MessageReaction[]
+  createdAt    DateTime          @default(now())
+
+  @@index([fromId])
+  @@index([channelId])
+}
+
+model MessageReaction {
+  id        String  @id @default(cuid())
+  fromId    String
+  from      User    @relation(fields: [fromId], references: [id], onDelete: Cascade)
+  messageId String
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  reaction MessageReactionType
+
+  @@index([fromId])
+  @@index([messageId])
+}
+
+model MessageView {
+  id        String         @id @default(cuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channelId String
+  channel   MessageChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  lastView  DateTime
+
+  @@index([userId])
+  @@index([channelId])
 }

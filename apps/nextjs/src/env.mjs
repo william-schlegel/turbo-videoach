@@ -32,8 +32,6 @@ export const server = z.object({
   EMAIL_SERVER_PORT: z.enum(["25", "587", "465", "2525", "25025"]),
   AWS_ACCESS_KEY_ID_WSC: z.string(),
   AWS_SECRET_ACCESS_KEY_WSC: z.string(),
-  STREAMCHAT_API_KEY: z.string(),
-  STREAMCHAT_SECRET_KEY: z.string(),
 });
 
 /**
@@ -44,7 +42,6 @@ export const server = z.object({
 export const client = z.object({
   NEXT_PUBLIC_MAPBOX_TOKEN: z.string(),
   NEXT_PUBLIC_MAPQUEST_KEY: z.string(),
-  NEXT_PUBLIC_STREAMCHAT_API_KEY: z.string(),
 });
 
 /**
@@ -70,12 +67,9 @@ const processEnv = {
   EMAIL_SERVER_PORT: process.env.EMAIL_SERVER_PORT,
   AWS_ACCESS_KEY_ID_WSC: process.env.AWS_ACCESS_KEY_ID_WSC,
   AWS_SECRET_ACCESS_KEY_WSC: process.env.AWS_SECRET_ACCESS_KEY_WSC,
-  STREAMCHAT_API_KEY: process.env.STREAMCHAT_API_KEY,
-  STREAMCHAT_SECRET_KEY: process.env.STREAMCHAT_SECRET_KEY,
 
   NEXT_PUBLIC_MAPBOX_TOKEN: process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
   NEXT_PUBLIC_MAPQUEST_KEY: process.env.NEXT_PUBLIC_MAPQUEST_KEY,
-  NEXT_PUBLIC_STREAMCHAT_API_KEY: process.env.NEXT_PUBLIC_STREAMCHAT_API_KEY,
 };
 
 // Don't touch the part below

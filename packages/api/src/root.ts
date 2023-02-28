@@ -6,6 +6,7 @@ import { coachRouter } from "./router/coachs";
 import { dashboardRouter } from "./router/dashboard";
 import { eventRouter } from "./router/event";
 import { fileRouter } from "./router/files";
+import { messageRouter } from "./router/message";
 import { notificationRouter } from "./router/notification";
 import { pageRouter } from "./router/page";
 import { planningRouter } from "./router/planning";
@@ -31,6 +32,7 @@ export const appRouter = createTRPCRouter({
   subscriptions: subscriptionRouter,
   events: eventRouter,
   notifications: notificationRouter,
+  messages: messageRouter,
 });
 
 // export type definition of API

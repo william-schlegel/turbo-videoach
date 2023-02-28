@@ -1,10 +1,9 @@
-import { TRPCError } from "@trpc/server";
 import { Role } from "@prisma/client";
-import { z } from "zod";
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc";
-import { createToken, streamchatClient } from "../streamchat";
-import { getDocUrl } from "./files";
+import { TRPCError } from "@trpc/server";
 import bcrypt from "bcrypt";
+import { z } from "zod";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+import { getDocUrl } from "./files";
 
 const UserFilter = z
   .object({
@@ -45,14 +44,15 @@ export const userRouter = createTRPCRouter({
           accounts: true,
         },
       });
-      if (user?.id && !user?.chatToken) {
-        const token = createToken(user.id);
-        user.chatToken = token;
-        await ctx.prisma.user.update({
-          where: { id: input },
-          data: { chatToken: token },
-        });
-      }
+      // if (user?.id && user.ownedChannel.length === 0) {
+      //   await ctx.prisma.messageChannel.create({
+      //     data: {
+      //       ownerId: user.id,
+      //       name: user.name,
+      //       type: "PRIVATE",
+      //     },
+      //   });
+      // }
       let profileImageUrl = user?.image ?? "/images/dummy.jpg";
       if (user?.profileImageId) {
         profileImageUrl = await getDocUrl(user.id, user.profileImageId);
@@ -136,7 +136,7 @@ export const userRouter = createTRPCRouter({
         filter: UserFilter,
         skip: z.number(),
         take: z.number(),
-      })
+      }),
     )
     .query(({ ctx, input }) => {
       if (ctx.session.user?.role !== Role.ADMIN)
@@ -158,6 +158,29 @@ export const userRouter = createTRPCRouter({
           where: filter,
           take: input.take,
           skip: input.skip,
+        }),
+      ]);
+    }),
+  getUsersForGroup: protectedProcedure
+    .input(
+      z.object({
+        searchString: z.string(),
+      }),
+    )
+    .query(({ ctx, input }) => {
+      return ctx.prisma.$transaction([
+        ctx.prisma.user.count({
+          where: {
+            name: { contains: input.searchString },
+          },
+        }),
+        ctx.prisma.user.findMany({
+          where: { name: { contains: input.searchString } },
+          take: 10,
+          select: {
+            id: true,
+            name: true,
+          },
         }),
       ]);
     }),
@@ -184,7 +207,7 @@ export const userRouter = createTRPCRouter({
         publicName: z.string().optional(),
         aboutMe: z.string().optional(),
         coachingActivities: z.array(z.string()).optional(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       if (input.role === Role.ADMIN && ctx.session.user?.role !== Role.ADMIN)
@@ -227,14 +250,6 @@ export const userRouter = createTRPCRouter({
                 }
               : undefined,
           },
-        });
-      }
-
-      // update role in stream chat if admin
-      if (input.role === "ADMIN") {
-        await streamchatClient.partialUpdateUser({
-          id: input.id,
-          set: { role: "admin" },
         });
       }
 
@@ -286,7 +301,7 @@ export const userRouter = createTRPCRouter({
         subscriptionId: z.string().cuid(),
         monthly: z.boolean().default(true),
         online: z.boolean().default(false),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // notify the club manager
@@ -340,7 +355,10 @@ export const userRouter = createTRPCRouter({
     }),
   deleteSubscription: protectedProcedure
     .input(
-      z.object({ userId: z.string().cuid(), subscriptionId: z.string().cuid() })
+      z.object({
+        userId: z.string().cuid(),
+        subscriptionId: z.string().cuid(),
+      }),
     )
     .mutation(({ ctx, input }) =>
       ctx.prisma.userMember.update({
@@ -352,7 +370,7 @@ export const userRouter = createTRPCRouter({
             },
           },
         },
-      })
+      }),
     ),
   createUserWithCredentials: publicProcedure
     .input(
@@ -360,7 +378,7 @@ export const userRouter = createTRPCRouter({
         name: z.string(),
         email: z.string().email(),
         password: z.string(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // check if user exist with email

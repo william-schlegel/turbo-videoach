@@ -1,0 +1,20 @@
+{
+  "my-chat": "Ma messagerie",
+  "no-message-yet": "Pas encore de message",
+  "group-name": "Nom du groupe",
+  "name-mandatory": "Le nom est obligatoire",
+  "new-group": "Groupe de discussion",
+  "image": "Image du groupe",
+  "image-size": "Taille maximum de l'image {{size}}",
+  "image-size-error": "La taille maximum autorisée est {{size}}",
+  "group-users": "Invités",
+  "and-n-more_one": "Et {{count}} autre",
+  "and-n-more_other": "Et {{count}} autres",
+  "delete-user": "Supprimer",
+  "channel": {
+    "club": "Club",
+    "coach": "Coach",
+    "group": "Groupe",
+    "private": "Privé"
+  }
+}

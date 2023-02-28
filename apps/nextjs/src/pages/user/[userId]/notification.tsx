@@ -150,7 +150,8 @@ const ManageNotifications = ({
                         <i className="bx bx-x bx-xs rounded-full bg-error p-2 text-error-content" />
                       ) : null}
                       {notification.type === "SEARCH_COACH" ||
-                      notification.type === "SEARCH_CLUB" ? (
+                      notification.type === "SEARCH_CLUB" ||
+                      notification.type === "NEW_REQUEST" ? (
                         <i className="bx bx-question-mark bx-xs rounded-full bg-secondary p-2 text-secondary-content" />
                       ) : null}
                       {notification.type === "NEW_SUBSCRIPTION" ? (
@@ -267,10 +268,12 @@ type NotificationMessageProps = {
         userFrom: {
           name: string;
           imageUrl: string;
+          email: string;
         };
         userTo: {
           name: string;
           imageUrl: string;
+          email: string;
         };
       })
     | null;
@@ -407,6 +410,53 @@ function NotificationMessage({
           </button>
         </div>,
       );
+  }
+  if (fromTo === "to" && !notification.answered) {
+    if (notification.type === "SEARCH_COACH")
+      Elem.push(
+        <div className="flex items-center gap-2">
+          <button
+            className="btn-success btn"
+            type="button"
+            onClick={() =>
+              handleClick(
+                "/api/notification/acceptSearchCoach",
+                notification.id,
+              )
+            }
+          >
+            {t("notification.accept")}
+          </button>
+          <button
+            className="btn-error btn"
+            type="button"
+            onClick={() =>
+              handleClick(
+                "/api/notification/refuseSearchCoach",
+                notification.id,
+              )
+            }
+          >
+            {t("notification.refuse")}
+          </button>
+        </div>,
+      );
+    if (notification.type === "NEW_REQUEST") {
+      const email = notification.userFrom.email;
+      Elem.push(
+        <div className="flex items-center gap-2">
+          <a
+            className="btn-success btn flex items-center gap-4"
+            href={`mailto:${email}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <i className="bx bx-envelope bx-sm" />
+            <span>{t("notification.send-email")}</span>
+          </a>
+        </div>,
+      );
+    }
   }
   return (
     <>

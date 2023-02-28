@@ -35,6 +35,7 @@ export const notificationRouter = createTRPCRouter({
               name: true,
               image: true,
               profileImageId: true,
+              email: true,
             },
           },
           userTo: {
@@ -43,6 +44,7 @@ export const notificationRouter = createTRPCRouter({
               name: true,
               image: true,
               profileImageId: true,
+              email: true,
             },
           },
         },
@@ -85,10 +87,12 @@ export const notificationRouter = createTRPCRouter({
         userFrom: {
           name: notification.userFrom.name ?? "",
           imageUrl: urlFrom ?? "/images/dummy?jpg",
+          email: notification.userFrom.email ?? "",
         },
         userTo: {
           name: notification.userTo.name ?? "",
           imageUrl: urlTo ?? "/images/dummy?jpg",
+          email: notification.userTo.email ?? "",
         },
       };
     }),
