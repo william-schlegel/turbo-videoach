@@ -264,7 +264,7 @@ function Message({
         </div>
         {showReactions ? (
           <ul
-            className={`absolute rounded-full border bg-base-100 p-1 text-lg ${
+            className={`absolute rounded-full border bg-base-100 p-1 px-2 text-lg ${
               myMessage
                 ? "-left-32 border-secondary"
                 : "-right-32 border-primary"
@@ -755,13 +755,13 @@ const REACTIONS: readonly {
   readonly value: MessageReactionType;
   readonly label: string;
 }[] = [
-  { value: "CHECK", label: "🙏" },
-  { value: "GRRR", label: "😡" },
   { value: "LIKE", label: "👍" },
-  { value: "LOL", label: "😂" },
   { value: "LOVE", label: "❤" },
+  { value: "LOL", label: "😂" },
   { value: "SAD", label: "😥" },
+  { value: "GRRR", label: "😡" },
   { value: "WOAH", label: "😯" },
+  { value: "CHECK", label: "🙏" },
   { value: "STRENGTH", label: "💪" },
   { value: "FIST", label: "👊" },
 ] as const;
