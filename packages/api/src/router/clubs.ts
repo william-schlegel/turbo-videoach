@@ -1,8 +1,9 @@
 import { Role } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { isCUID } from "../lib/checkValidity";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
-import { getDocUrl } from "./files";
+import { deleteDocument, getDocUrl } from "./files";
 
 export const clubRouter = createTRPCRouter({
   getClubById: protectedProcedure
@@ -260,6 +261,9 @@ export const clubRouter = createTRPCRouter({
           code: "UNAUTHORIZED",
           message: "You are not authorized to delete this club",
         });
+      if (club?.managerId && club?.logoId && isCUID(club?.logoId))
+        await deleteDocument(`${club.managerId}/${club.logoId}`);
+
       return ctx.prisma.club.delete({ where: { id: input } });
     }),
   updateClubActivities: protectedProcedure

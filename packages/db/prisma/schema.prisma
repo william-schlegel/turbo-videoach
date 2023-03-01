@@ -864,11 +864,13 @@ enum MessageReactionType {
   GRRR
   SAD
   CHECK
+  STRENGTH
+  FIST
 }
 
 model Message {
   id           String            @id @default(cuid())
-  message      String
+  message      String            @db.MediumText
   fromId       String
   from         User              @relation(fields: [fromId], references: [id], onDelete: Cascade)
   channelId    String

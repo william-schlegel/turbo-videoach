@@ -3,7 +3,8 @@
   "no-message-yet": "Pas encore de message",
   "group-name": "Nom du groupe",
   "name-mandatory": "Le nom est obligatoire",
-  "new-group": "Groupe de discussion",
+  "new-group": "Nouveau groupe de discussion",
+  "new-message": "Votre message",
   "image": "Image du groupe",
   "image-size": "Taille maximum de l'image {{size}}",
   "image-size-error": "La taille maximum autorisée est {{size}}",
@@ -11,10 +12,30 @@
   "and-n-more_one": "Et {{count}} autre",
   "and-n-more_other": "Et {{count}} autres",
   "delete-user": "Supprimer",
+  "update-group": "Modifier le groupe",
+  "group-updated": "Groupe mis à jour",
+  "group-created": "Nouveau groupe créé",
+  "group-deleted": "Groupe supprimé",
+  "deletion-message": "Vous allez supprimer ce groupe.|Tous les messages associés seront également supprimés.|Cette action est irréversible. Confirmez-vous ?",
+  "group-deletion": "Suppression d'un groupe",
+  "react": "Réagir",
+  "reply": "Répondre",
+  "reply-to": "Réponse au message",
   "channel": {
     "club": "Club",
     "coach": "Coach",
     "group": "Groupe",
     "private": "Privé"
+  },
+  "reaction": {
+    "CHECK": "Top là",
+    "GRRR": "Grrrrr",
+    "LIKE": "J'aime",
+    "LOL": "Ha ha ha",
+    "LOVE": "J'adore !",
+    "SAD": "Snif",
+    "WOAH": "Whaou",
+    "STRENGHT": "Force",
+    "FIST": "Check"
   }
 }

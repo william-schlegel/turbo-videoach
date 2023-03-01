@@ -21,7 +21,7 @@ const s3 = new S3Client({
 const Bucket = "videoach-dev";
 //process.env.NODE_ENV === "production" ? "videoach-prod" : "videoach-dev";
 
-export async function createPost(
+export async function createDocument(
   key: string,
   fileType: string,
   maxSize: number = 1024 * 1024,
@@ -46,6 +46,14 @@ export async function getDocUrl(userId: string, documentId: string) {
       Key: `${userId}/${documentId}`,
     }),
   );
+}
+
+export async function deleteDocument(key: string) {
+  const command = new DeleteObjectCommand({
+    Bucket,
+    Key: key,
+  });
+  return await s3.send(command);
 }
 
 interface DocMetadata extends UserDocument {
@@ -85,7 +93,7 @@ export const fileRouter = createTRPCRouter({
           fileName: input.fileName,
         },
       });
-      const presigned = await createPost(
+      const presigned = await createDocument(
         `${userId}/${document.id}`,
         input.fileType,
         input.maxSize,
@@ -115,7 +123,7 @@ export const fileRouter = createTRPCRouter({
         });
       }
       const userId = input.userId;
-      const presigned = await createPost(
+      const presigned = await createDocument(
         `${userId}/${input.fileId}`,
         input.fileType,
         input.maxSize,

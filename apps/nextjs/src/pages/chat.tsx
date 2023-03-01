@@ -18,9 +18,11 @@ import { toast } from "react-toastify";
 import nextI18nConfig from "~/../next-i18next.config.mjs";
 import Layout from "~/components/layout";
 import ButtonIcon from "~/components/ui/buttonIcon";
+import Confirmation from "~/components/ui/confirmation";
 import Modal from "~/components/ui/modal";
 import Spinner from "~/components/ui/spinner";
 import createLink from "~/lib/createLink";
+import { formatDifference } from "~/lib/formatDate";
 import { formatSize } from "~/lib/formatNumber";
 import useDebounce from "~/lib/useDebounce";
 import { useHover, useOnClickOutside } from "~/lib/useHover";
@@ -45,6 +47,7 @@ const Chat = () => {
       },
     },
   );
+  const selectedChannel = channels.data?.find((c) => c.id === channelId);
   const messages = api.messages.getMessagesForUser.useQuery(
     { userId, channelId },
     {
@@ -61,6 +64,7 @@ const Chat = () => {
       });
     },
   });
+  const [replyData, setReplyData] = useState({ id: "", message: "" });
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -69,9 +73,11 @@ const Chat = () => {
         channelId,
         from: userId,
         message,
+        messageRefId: replyData.id !== "" ? replyData.id : undefined,
       });
     }
     setMessage("");
+    setReplyData({ id: "", message: "" });
   }
 
   return (
@@ -81,12 +87,22 @@ const Chat = () => {
     >
       <div className="flex items-center justify-between">
         <h1>{t("my-chat")}</h1>
-        <ModalGroup userId={userId} />
+        <div className="flex gap-2">
+          {selectedChannel &&
+          selectedChannel.type === "GROUP" &&
+          selectedChannel.owner ? (
+            <>
+              <DeleteGroup groupId={channelId} userId={userId} />
+              <UpdateGroup groupId={channelId} userId={userId} />
+            </>
+          ) : null}
+          <CreateGroup userId={userId} />
+        </div>
       </div>
       {channels.isLoading ? (
         <Spinner />
       ) : (
-        <div className="grid grid-cols-[20rem,1fr] gap-2">
+        <div className="grid grid-cols-[auto,1fr] gap-2 lg:grid-cols-[20rem,1fr]">
           <div className="overflow-hidden rounded border border-primary">
             {channels.data?.map((channel) => (
               <Channel
@@ -115,6 +131,9 @@ const Chat = () => {
                   reactions={message.reactions.map((r) => r.reaction)}
                   userId={userId}
                   channelId={channelId}
+                  messageDate={message.createdAt}
+                  replyId={message.messageRefId}
+                  onReply={(id, message) => setReplyData({ id, message })}
                 />
               ))}
             </div>
@@ -122,10 +141,17 @@ const Chat = () => {
               onSubmit={(e) => onSubmit(e)}
               className="mt-auto border-t border-primary bg-base-100 p-2"
             >
+              {replyData.id ? (
+                <div className="space-x-2">
+                  <span className="text-primary">{t("reply-to")}</span>
+                  <span className="truncate">{replyData.message}</span>
+                </div>
+              ) : null}
               <input
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 className="w-full bg-transparent px-4 py-2"
+                placeholder={t("new-message") ?? ""}
               />
             </form>
           </div>
@@ -140,11 +166,14 @@ export default Chat;
 type MessageProps = {
   messageId: string;
   from: string;
+  messageDate: Date;
   message: string;
   reactions: MessageReactionType[];
   myMessage: boolean;
   userId: string;
   channelId: string;
+  replyId: string | null;
+  onReply: (id: string, message: string) => void;
 };
 
 function Message({
@@ -155,12 +184,16 @@ function Message({
   message,
   reactions,
   myMessage,
+  messageDate,
+  replyId,
+  onReply,
 }: MessageProps) {
   const ref = useRef<HTMLDivElement | null>(null);
   const hovered = useHover(ref);
   const [showReactions, setShowReactions] = useState(false);
   const utils = api.useContext();
   useOnClickOutside(ref, () => setShowReactions(false));
+  const { t } = useTranslation("message");
 
   const addReaction = api.messages.addReaction.useMutation({
     onSuccess() {
@@ -169,6 +202,9 @@ function Message({
         channelId,
       });
     },
+  });
+  const reply = api.messages.getMessageById.useQuery(replyId ?? "", {
+    enabled: isCUID(replyId),
   });
 
   function onClickReaction(reaction: MessageReactionType) {
@@ -182,12 +218,30 @@ function Message({
 
   return (
     <div ref={ref} className={`chat ${myMessage ? "chat-end" : "chat-start"}`}>
-      {myMessage ? null : <div className="chat-header">{from}</div>}
+      {myMessage ? null : (
+        <div className="chat-header space-x-2">
+          <span>{from}</span>
+          <span className="text-xs text-primary">
+            {formatDifference(messageDate)}
+          </span>
+        </div>
+      )}
       <div
         className={`chat-bubble relative ${
           myMessage ? "chat-bubble-secondary" : "chat-bubble-primary"
         }`}
       >
+        {reply.data?.message ? (
+          <div
+            className={`${
+              myMessage
+                ? "bg-primary text-primary-content"
+                : "bg-secondary text-secondary-content"
+            } truncate rounded-lg p-2 text-sm`}
+          >
+            {reply.data?.message}
+          </div>
+        ) : null}
         {message}
         {reactions.length ? (
           <Reactions reactions={reactions} myMessage={myMessage} />
@@ -197,16 +251,20 @@ function Message({
             myMessage ? "-left-16 flex-row-reverse" : "-right-16"
           } top-1/2 -translate-y-1/2`}
         >
-          <button>
-            <i className="bx bx-reply bx-sm" />
+          <button onClick={() => onReply(messageId, message)}>
+            <div className="tooltip" data-tip={t("reply")}>
+              <i className="bx bx-reply bx-sm" />
+            </div>
           </button>
           <button onClick={() => setShowReactions(true)}>
-            <i className="bx bx-happy bx-sm" />
+            <div className="tooltip" data-tip={t("react")}>
+              <i className="bx bx-happy bx-sm" />
+            </div>
           </button>
         </div>
         {showReactions ? (
           <ul
-            className={`absolute rounded border bg-base-100 p-1 text-lg ${
+            className={`absolute rounded-full border bg-base-100 p-1 text-lg ${
               myMessage
                 ? "-left-32 border-secondary"
                 : "-right-32 border-primary"
@@ -217,7 +275,12 @@ function Message({
                 key={reaction.value}
                 onClick={() => onClickReaction(reaction.value)}
               >
-                {reaction.label}
+                <div
+                  className="tooltip"
+                  data-tip={t(`reaction.${reaction.value}`)}
+                >
+                  {reaction.label}
+                </div>
               </button>
             ))}
           </ul>
@@ -234,6 +297,11 @@ type ReactionsProps = {
 
 function Reactions({ reactions, myMessage }: ReactionsProps) {
   const { getReaction } = useChannel();
+  const reacts = reactions.reduce((acc, r) => {
+    acc.set(r, (acc.get(r) ?? 0) + 1);
+    return acc;
+  }, new Map<MessageReactionType, number>());
+
   return (
     <div
       className={`absolute ${
@@ -242,8 +310,14 @@ function Reactions({ reactions, myMessage }: ReactionsProps) {
         myMessage ? "border-secondary" : "border-primary"
       } bg-base-100 p-1 px-2 text-xs`}
     >
-      {reactions.map((reaction, idx) => (
-        <span key={idx}>{getReaction(reaction)}</span>
+      {Array.from(reacts).map((reaction, idx) => (
+        <span
+          key={idx}
+          className="tooltip tooltip-left cursor-pointer"
+          data-tip={reaction[1]}
+        >
+          {getReaction(reaction[0])}
+        </span>
       ))}
     </div>
   );
@@ -270,7 +344,7 @@ function Channel({
   return (
     <Link
       href={createLink({ channelId: id })}
-      className={`flex w-full items-center gap-4 p-4 ${
+      className={`flex w-full flex-col items-center gap-4 p-2 lg:flex-row lg:p-4 ${
         selected
           ? "bg-secondary text-secondary-content"
           : "bg-base-100 text-base-content"
@@ -283,24 +357,157 @@ function Channel({
           owner ? "outline-accent" : "outline-primary"
         }`}
       />
-      <div className="text-xl font-semibold">{name}</div>
-      <div className="badge badge-primary ml-auto">{getChannelName(type)}</div>
+      <div className="text-sm lg:text-xl lg:font-semibold">{name}</div>
+      <div className="hidden lg:ml-auto lg:badge-primary lg:badge">
+        {getChannelName(type)}
+      </div>
     </Link>
   );
 }
 
-type ModalGroupProps = {
+type CreateGroupProps = {
   userId: string;
 };
 
-type ModalGroupForm = {
+function CreateGroup({ userId }: CreateGroupProps) {
+  const { t } = useTranslation("message");
+  const [closeModal, setCloseModal] = useState(false);
+  const saveLogo = useWriteFile(userId, "IMAGE", MAX_SIZE_LOGO);
+  const utils = api.useContext();
+  const createGroup = api.messages.createGroup.useMutation({
+    onSuccess() {
+      utils.messages.getChannelList.invalidate({ userId });
+      toast.success(t("group-created"));
+    },
+  });
+
+  const onSubmit = async (data: GroupFormValues) => {
+    let groupImageId: string | undefined = "";
+    if (data.groupImage?.[0]) groupImageId = await saveLogo(data.groupImage[0]);
+    createGroup.mutate({
+      userId,
+      name: data.name,
+      imageId: groupImageId,
+      users: data.users.filter((u) => isCUID(u.id)).map((u) => u.id ?? ""),
+    });
+    setCloseModal(true);
+  };
+
+  return (
+    <Modal
+      title={t("new-group")}
+      cancelButtonText=""
+      closeModal={closeModal}
+      onCloseModal={() => setCloseModal(false)}
+      variant="Primary"
+      className="overflow-visible"
+    >
+      <GroupForm onSubmit={onSubmit} onCancel={() => setCloseModal(true)} />
+    </Modal>
+  );
+}
+
+type UpdateGroupProps = {
+  userId: string;
+  groupId: string;
+};
+
+export const UpdateGroup = ({ userId, groupId }: UpdateGroupProps) => {
+  const utils = api.useContext();
+  const { t } = useTranslation("message");
+  const [initialData, setInitialData] = useState<GroupFormValues | undefined>();
+  const [closeModal, setCloseModal] = useState(false);
+  const queryGroup = api.messages.getGroupById.useQuery(groupId, {
+    onSuccess(data) {
+      if (data)
+        setInitialData({
+          name: data?.name ?? "",
+          users: data.users,
+          deleteImage: false,
+        });
+    },
+    enabled: isCUID(groupId),
+  });
+  const saveImage = useWriteFile(userId, "IMAGE", MAX_SIZE_LOGO);
+  const updateGroup = api.messages.updateGroup.useMutation({
+    onSuccess: () => {
+      utils.messages.getChannelList.invalidate({ userId });
+      toast.success(t("group-updated"));
+    },
+    onError(error) {
+      toast.error(error.message);
+    },
+  });
+  const deleteImage = api.files.deleteUserDocument.useMutation();
+
+  const onSubmit = async (data: GroupFormValues) => {
+    let imageId: string | undefined =
+      queryGroup.data?.groupImageId ?? undefined;
+    if (
+      data.deleteImage &&
+      isCUID(userId) &&
+      isCUID(queryGroup.data?.groupImageId)
+    )
+      await deleteImage.mutateAsync({
+        userId,
+        documentId: queryGroup.data?.groupImageId ?? "",
+      });
+    if (data.groupImage?.[0]) imageId = await saveImage(data.groupImage[0]);
+    updateGroup.mutate({
+      id: groupId,
+      name: data.name,
+      imageId,
+    });
+    setInitialData(undefined);
+    setCloseModal(true);
+  };
+
+  return (
+    <Modal
+      title={t("update-group")}
+      buttonIcon={<i className="bx bx-edit bx-sm" />}
+      variant={"Icon-Outlined-Primary"}
+      cancelButtonText=""
+      closeModal={closeModal}
+      onCloseModal={() => setCloseModal(false)}
+    >
+      <h3>
+        {t("update-group")} {queryGroup.data?.name}
+      </h3>
+      {initialData ? (
+        <GroupForm
+          update={true}
+          initialData={initialData}
+          onSubmit={onSubmit}
+          onCancel={() => setCloseModal(true)}
+        />
+      ) : (
+        <Spinner />
+      )}
+    </Modal>
+  );
+};
+
+type GroupFormProps = {
+  onSubmit: (data: GroupFormValues) => void;
+  onCancel: () => void;
+  update?: boolean;
+  initialData?: GroupFormValues;
+};
+
+type GroupFormValues = {
   name: string;
   groupImage?: FileList;
   users: UserForGroup[];
   deleteImage: boolean;
 };
 
-function ModalGroup({ userId }: ModalGroupProps) {
+function GroupForm({
+  onSubmit,
+  onCancel,
+  update,
+  initialData,
+}: GroupFormProps) {
   const { t } = useTranslation("message");
   const {
     register,
@@ -309,17 +516,13 @@ function ModalGroup({ userId }: ModalGroupProps) {
     reset,
     control,
     setValue,
-  } = useForm<ModalGroupForm>();
+  } = useForm<GroupFormValues>();
   const fields = useWatch({ control });
   const [imagePreview, setImagePreview] = useState("");
-  const [closeModal, setCloseModal] = useState(false);
-  const saveLogo = useWriteFile(userId, "IMAGE", MAX_SIZE_LOGO);
-  const utils = api.useContext();
-  const createGroup = api.messages.createGroup.useMutation({
-    onSuccess() {
-      utils.messages.getChannelList.invalidate({ userId });
-    },
-  });
+
+  useEffect(() => {
+    reset(initialData);
+  }, [initialData, reset]);
 
   useEffect(() => {
     if (fields.groupImage?.[0]) {
@@ -340,99 +543,111 @@ function ModalGroup({ userId }: ModalGroupProps) {
     setValue("groupImage", undefined);
   };
 
-  const onSubmitForm: SubmitHandler<ModalGroupForm> = async (data) => {
-    let groupImageId: string | undefined = "";
-    if (data.groupImage?.[0]) groupImageId = await saveLogo(data.groupImage[0]);
-    createGroup.mutate({
-      userId,
-      name: data.name,
-      imageId: groupImageId,
-      users: data.users.filter((u) => isCUID(u.id)).map((u) => u.id ?? ""),
-    });
+  const onSubmitForm: SubmitHandler<GroupFormValues> = (data) => {
+    onSubmit(data);
     reset();
     setImagePreview("");
-    setCloseModal(true);
   };
 
-  const onError: SubmitErrorHandler<ModalGroupForm> = (errors) => {
+  const onError: SubmitErrorHandler<GroupFormValues> = (errors) => {
     console.error("errors", errors);
   };
 
   return (
-    <Modal
-      title={t("new-group")}
-      cancelButtonText=""
-      closeModal={closeModal}
-      onCloseModal={() => setCloseModal(false)}
-      variant="Primary"
-      className="overflow-visible"
-    >
-      <form onSubmit={handleSubmit(onSubmitForm, onError)}>
-        <label className="required w-fit">{t("group-name")}</label>
-        <div>
+    <form onSubmit={handleSubmit(onSubmitForm, onError)}>
+      <label className="required w-fit">{t("group-name")}</label>
+      <div>
+        <input
+          {...register("name", {
+            required: t("name-mandatory") ?? true,
+          })}
+          type={"text"}
+          className="input-bordered input w-full"
+        />
+        {errors.name ? (
+          <p className="text-sm text-error">{errors.name.message}</p>
+        ) : null}
+      </div>
+      <div className="col-span-2 flex flex-col items-center justify-start gap-4">
+        <div className="w-full ">
+          <label>{t("image")}</label>
           <input
-            {...register("name", {
-              required: t("name-mandatory") ?? true,
-            })}
-            type={"text"}
-            className="input-bordered input w-full"
+            type="file"
+            className="file-input-bordered file-input-primary file-input w-full"
+            {...register("groupImage")}
+            accept="image/*"
           />
-          {errors.name ? (
-            <p className="text-sm text-error">{errors.name.message}</p>
-          ) : null}
+          <p className="col-span-2 text-sm text-gray-500">
+            {t("image-size", { size: formatSize(MAX_SIZE_LOGO) })}
+          </p>
         </div>
-        <div className="col-span-2 flex flex-col items-center justify-start gap-4">
-          <div className="w-full ">
-            <label>{t("image")}</label>
-            <input
-              type="file"
-              className="file-input-bordered file-input-primary file-input w-full"
-              {...register("groupImage")}
-              accept="image/*"
+        {imagePreview ? (
+          <div className="flex items-center gap-4">
+            <img
+              src={imagePreview}
+              alt=""
+              className="aspect-square w-32 rounded-full"
             />
-            <p className="col-span-2 text-sm text-gray-500">
-              {t("image-size", { size: formatSize(MAX_SIZE_LOGO) })}
-            </p>
-          </div>
-          {imagePreview ? (
-            <div className="flex items-center gap-4">
-              <img
-                src={imagePreview}
-                alt=""
-                className="aspect-square w-32 rounded-full"
+            <button onClick={handleDeleteImage}>
+              <ButtonIcon
+                iconComponent={<i className="bx bx-trash" />}
+                title={t("club.delete-groupImage")}
+                buttonVariant="Icon-Secondary"
+                buttonSize="sm"
               />
-              <button onClick={handleDeleteImage}>
-                <ButtonIcon
-                  iconComponent={<i className="bx bx-trash" />}
-                  title={t("club.delete-groupImage")}
-                  buttonVariant="Icon-Secondary"
-                  buttonSize="sm"
-                />
-              </button>
-            </div>
-          ) : null}
+            </button>
+          </div>
+        ) : null}
+        {update ? null : (
           <GroupUser
             users={fields.users ?? []}
             setUsers={(users) => setValue("users", users)}
           />
-          <div className="ml-auto flex items-center gap-2">
-            <button
-              type="button"
-              className="btn-outline btn-secondary btn"
-              onClick={(e) => {
-                e.preventDefault();
-                setCloseModal(true);
-              }}
-            >
-              {t("common:cancel")}
-            </button>
-            <button className="btn-primary btn">{t("common:save")}</button>
-          </div>
+        )}
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            type="button"
+            className="btn-outline btn-secondary btn"
+            onClick={(e) => {
+              e.preventDefault();
+              onCancel();
+            }}
+          >
+            {t("common:cancel")}
+          </button>
+          <button className="btn-primary btn">{t("common:save")}</button>
         </div>
-      </form>
-    </Modal>
+      </div>
+    </form>
   );
 }
+
+export const DeleteGroup = ({ userId, groupId }: UpdateGroupProps) => {
+  const utils = api.useContext();
+  const { t } = useTranslation("message");
+
+  const deleteGroup = api.messages.deleteGroup.useMutation({
+    onSuccess: () => {
+      utils.messages.getChannelList.invalidate({ userId });
+      toast.success(t("group-deleted"));
+    },
+    onError(error) {
+      toast.error(error.message);
+    },
+  });
+
+  return (
+    <Confirmation
+      message={t("deletion-message")}
+      title={t("group-deletion")}
+      onConfirm={() => {
+        deleteGroup.mutate(groupId);
+      }}
+      buttonIcon={<i className="bx bx-trash bx-sm" />}
+      variant={"Icon-Outlined-Secondary"}
+    />
+  );
+};
 
 type UserForGroup = {
   id?: string;
@@ -540,13 +755,15 @@ const REACTIONS: readonly {
   readonly value: MessageReactionType;
   readonly label: string;
 }[] = [
-  { value: "CHECK", label: "✅" },
+  { value: "CHECK", label: "🙏" },
   { value: "GRRR", label: "😡" },
   { value: "LIKE", label: "👍" },
   { value: "LOL", label: "😂" },
-  { value: "LOVE", label: "😍" },
+  { value: "LOVE", label: "❤" },
   { value: "SAD", label: "😥" },
   { value: "WOAH", label: "😯" },
+  { value: "STRENGTH", label: "💪" },
+  { value: "FIST", label: "👊" },
 ] as const;
 
 function useChannel() {

@@ -1,5 +1,10 @@
-import { intervalToDuration, startOfToday, format } from "date-fns";
-import { fr, enUS } from "date-fns/locale";
+import {
+  format,
+  formatDistance,
+  intervalToDuration,
+  startOfToday,
+} from "date-fns";
+import { enUS, fr } from "date-fns/locale";
 import { i18n } from "next-i18next";
 
 /**
@@ -9,7 +14,7 @@ import { i18n } from "next-i18next";
  */
 export const formatDateAsYYYYMMDD = (
   dt: Date = startOfToday(),
-  withTime?: boolean
+  withTime?: boolean,
 ) => {
   let d = format(dt, "yyyy-MM-dd");
   if (withTime) d = d.concat("T").concat(format(dt, "HH:mm:ss"));
@@ -39,7 +44,7 @@ export const formatDateLocalized = (
     withDay: false,
     withTime: false,
     dateFormat: "number",
-  }
+  },
 ) => {
   const { withTime, withDay, dateFormat } = options;
   let frmt = "";
@@ -54,3 +59,10 @@ export const formatDateLocalized = (
     locale: i18n?.language === "en" ? enUS : fr,
   });
 };
+
+export function formatDifference(dateFrom: Date, dateSince?: Date | undefined) {
+  const endDate = dateSince ?? new Date(Date.now());
+  return formatDistance(endDate, dateFrom, {
+    locale: i18n?.language === "en" ? enUS : fr,
+  });
+}

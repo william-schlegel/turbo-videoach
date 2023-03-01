@@ -29,30 +29,27 @@ const MAX_SIZE_LOGO = 1024 * 1024;
 
 export const CreateClub = () => {
   const { data: sessionData } = api.auth.getSession.useQuery();
+  const userId = sessionData?.user?.id ?? "";
   const utils = api.useContext();
   const { t } = useTranslation("club");
   const [closeModal, setCloseModal] = useState(false);
 
   const createClub = api.clubs.createClub.useMutation({
     onSuccess: () => {
-      utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
+      utils.clubs.getClubsForManager.invalidate(userId);
       toast.success(t("club.created"));
     },
     onError(error) {
       toast.error(error.message);
     },
   });
-  const saveLogo = useWriteFile(
-    sessionData?.user?.id ?? "",
-    "IMAGE",
-    MAX_SIZE_LOGO,
-  );
+  const saveLogo = useWriteFile(userId, "IMAGE", MAX_SIZE_LOGO);
 
   const onSubmit = async (data: ClubFormValues) => {
     let logoId: string | undefined = "";
     if (data.logo?.[0]) logoId = await saveLogo(data.logo[0]);
     createClub.mutate({
-      userId: sessionData?.user?.id ?? "",
+      userId,
       name: data.name,
       address: data.address,
       isSite: data.isSite ?? true,
@@ -107,9 +104,10 @@ export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
     "IMAGE",
     MAX_SIZE_LOGO,
   );
+  const userId = sessionData?.user?.id ?? "";
   const updateClub = api.clubs.updateClub.useMutation({
     onSuccess: () => {
-      utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
+      utils.clubs.getClubsForManager.invalidate(userId);
       utils.clubs.getClubById.invalidate(clubId);
       toast.success(t("club.updated"));
     },
@@ -117,9 +115,15 @@ export const UpdateClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
       toast.error(error.message);
     },
   });
+  const deleteLogo = api.files.deleteUserDocument.useMutation();
 
   const onSubmit = async (data: ClubFormValues) => {
     let logoId: string | null = null;
+    if (data.deleteLogo && isCUID(userId) && isCUID(queryClub.data?.logoId))
+      await deleteLogo.mutateAsync({
+        userId,
+        documentId: queryClub.data?.logoId ?? "",
+      });
     if (data.logo?.[0]) logoId = (await saveLogo(data.logo[0])) ?? null;
     updateClub.mutate({
       id: clubId,
@@ -343,7 +347,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
       ) : null}
       <div className="col-span-2 flex items-center justify-end gap-2">
         <button
-          className="btn-outline btn btn-secondary"
+          className="btn-outline btn-secondary btn"
           onClick={(e) => {
             e.preventDefault();
             onCancel();
@@ -351,7 +355,7 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
         >
           {t("common:cancel")}
         </button>
-        <button className="btn btn-primary" type="submit">
+        <button className="btn-primary btn" type="submit">
           {t("common:save")}
         </button>
       </div>
@@ -362,11 +366,12 @@ function ClubForm({ onSubmit, onCancel, update, initialData }: ClubFormProps) {
 export const DeleteClub = ({ clubId }: PropsWithoutRef<PropsUpdateDelete>) => {
   const utils = api.useContext();
   const { data: sessionData } = api.auth.getSession.useQuery();
+  const userId = sessionData?.user?.id ?? "";
   const { t } = useTranslation("club");
 
   const deleteClub = api.clubs.deleteClub.useMutation({
     onSuccess: () => {
-      utils.clubs.getClubsForManager.invalidate(sessionData?.user?.id ?? "");
+      utils.clubs.getClubsForManager.invalidate(userId);
       utils.clubs.getClubById.invalidate(clubId);
       toast.success(t("deleted"));
     },
@@ -477,7 +482,7 @@ export const AddCoachToClub = ({ clubId, userId }: AddCoachToClubProps) => {
               required
             />
             <div className="mt-4 flex justify-end gap-2">
-              <button className="btn btn-primary" type="submit">
+              <button className="btn-primary btn" type="submit">
                 {t("coach.write")}
               </button>
             </div>
@@ -557,7 +562,7 @@ export function CoachDataPresentation({
             target="_blank"
             rel="noreferrer"
           >
-            <button className="btn btn-primary flex items-center gap-4">
+            <button className="btn-primary btn flex items-center gap-4">
               <span>{t("coach.view-page")}</span>
               <i className="bx bx-link-external bx-xs" />
             </button>

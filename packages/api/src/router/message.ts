@@ -1,7 +1,9 @@
-import { ChannelType, MessageReactionType } from "@acme/db";
+import { ChannelType, MessageReactionType, Role } from "@acme/db";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { isCUID } from "../lib/checkValidity";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { getDocUrl } from "./files";
+import { deleteDocument, getDocUrl } from "./files";
 
 const NB_MESSAGE_PER_PAGE = 20;
 
@@ -158,6 +160,15 @@ export const messageRouter = createTRPCRouter({
       const lastView = messageView?.lastView ?? new Date(0);
       return { messages, lastView };
     }),
+  getMessageById: protectedProcedure
+    .input(z.string().cuid())
+    .query(({ ctx, input }) =>
+      ctx.prisma.message.findUnique({
+        where: {
+          id: input,
+        },
+      }),
+    ),
   createMessage: protectedProcedure
     .input(
       z.object({
@@ -194,6 +205,21 @@ export const messageRouter = createTRPCRouter({
         },
       }),
     ),
+  getGroupById: protectedProcedure
+    .input(z.string().cuid())
+    .query(({ ctx, input }) =>
+      ctx.prisma.messageChannel.findUnique({
+        where: { id: input },
+        include: {
+          users: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      }),
+    ),
   createGroup: protectedProcedure
     .input(
       z.object({
@@ -216,4 +242,47 @@ export const messageRouter = createTRPCRouter({
         },
       }),
     ),
+  updateGroup: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().cuid(),
+        name: z.string(),
+        imageId: z.string().optional(),
+      }),
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.messageChannel.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          name: input.name,
+          groupImageId: input.imageId,
+        },
+      }),
+    ),
+  deleteGroup: protectedProcedure
+    .input(z.string().cuid())
+    .mutation(async ({ ctx, input }) => {
+      const channel = await ctx.prisma.messageChannel.findUnique({
+        where: { id: input },
+      });
+      if (!channel) return null;
+      if (
+        ctx.session.user.role !== Role.ADMIN &&
+        ctx.session.user.id !== channel?.ownerId
+      )
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to delete this channel",
+        });
+      if (
+        channel?.ownerId &&
+        channel?.groupImageId &&
+        isCUID(channel?.groupImageId)
+      )
+        await deleteDocument(`${channel.ownerId}/${channel.groupImageId}`);
+
+      return ctx.prisma.messageChannel.delete({ where: { id: input } });
+    }),
 });
