@@ -167,6 +167,13 @@ export const messageRouter = createTRPCRouter({
         where: {
           id: input,
         },
+        include: {
+          from: {
+            select: {
+              name: true,
+            },
+          },
+        },
       }),
     ),
   createMessage: protectedProcedure

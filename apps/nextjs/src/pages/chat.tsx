@@ -218,7 +218,13 @@ function Message({
 
   return (
     <div ref={ref} className={`chat ${myMessage ? "chat-end" : "chat-start"}`}>
-      {myMessage ? null : (
+      {myMessage ? (
+        <div className="chat-header space-x-2">
+          <span className="text-xs text-primary">
+            {formatDifference(messageDate)}
+          </span>
+        </div>
+      ) : (
         <div className="chat-header space-x-2">
           <span>{from}</span>
           <span className="text-xs text-primary">
@@ -239,7 +245,8 @@ function Message({
                 : "bg-secondary text-secondary-content"
             } truncate rounded-lg p-2 text-sm`}
           >
-            {reply.data?.message}
+            <p className={`text-xs text-gray-500`}>{reply.data?.from?.name}</p>
+            <p>{reply.data?.message}</p>
           </div>
         ) : null}
         {message}

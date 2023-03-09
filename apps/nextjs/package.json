@@ -54,6 +54,8 @@
     "@types/node": "^18.0.0",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
+    "api": "^5.0.7",
+    "auth": "^0.0.9",
     "autoprefixer": "^10.4.13",
     "dotenv-cli": "^7.0.0",
     "eslint": "^8.32.0",
