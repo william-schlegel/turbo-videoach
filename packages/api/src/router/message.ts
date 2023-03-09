@@ -21,19 +21,26 @@ export const messageRouter = createTRPCRouter({
   getChannelList: protectedProcedure
     .input(z.object({ userId: z.string().cuid() }))
     .query(async ({ ctx, input }) => {
-      const myChannels = await ctx.prisma.messageChannel.findMany({
-        where: {
-          OR: [
-            { ownerId: input.userId },
-            {
-              users: {
-                some: {
-                  id: input.userId,
-                },
+      const user = await ctx.prisma.user.findUnique({
+        where:{id: input.userId}
+      });
+      const isAdmin = user?.role==="ADMIN";
+      console.log('isAdmin', isAdmin)
+      const where = {
+        OR: [
+          { ownerId: input.userId },
+          {
+            users: {
+              some: {
+                id: input.userId,
               },
             },
-          ],
-        },
+          },
+        ],
+      };
+
+      const myChannels = await ctx.prisma.messageChannel.findMany({
+        where : isAdmin ? undefined : where,
         include: {
           club: {
             include: {

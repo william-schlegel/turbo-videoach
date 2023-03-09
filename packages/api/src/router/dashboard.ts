@@ -125,10 +125,12 @@ export const dashboardRouter = createTRPCRouter({
     const clubs = await ctx.prisma.club.findMany({
       include: { sites: { include: { _count: true } } },
     });
-    const members = await ctx.prisma.user.findMany();
+    const members = await ctx.prisma.user.count()
+    const messages = await ctx.prisma.message.count()
     return {
       clubs,
       members,
+      messages
     };
   }),
 });
