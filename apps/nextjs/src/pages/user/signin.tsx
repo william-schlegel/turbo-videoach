@@ -1,3 +1,4 @@
+import { getProviders } from "@acme/auth";
 import useLocalStorage from "@lib/useLocalstorage";
 import { api } from "@trpcclient/api";
 import Modal from "@ui/modal";
@@ -6,7 +7,7 @@ import type {
   GetServerSidePropsContext,
   InferGetServerSidePropsType,
 } from "next";
-import { getProviders, signIn } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useTranslation } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 import Head from "next/head";

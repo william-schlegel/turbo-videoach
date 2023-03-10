@@ -35,7 +35,7 @@ export default function Layout({ children, className, title }: Props) {
           theme={theme}
           onChangeTheme={(newTheme) => setTheme(newTheme)}
         />
-        <main className={`bg-base-200 pb-4 ${className ?? ""}`}>
+        <main className={`bg-base-200 pb-4 lg:mt-16 ${className ?? ""}`}>
           {children}
         </main>
         <Footer />

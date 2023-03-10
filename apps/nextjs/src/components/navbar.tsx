@@ -9,6 +9,8 @@ import { useTranslation } from "next-i18next";
 import Link from "next/link";
 import { type TThemes } from "./themeSelector";
 
+const BETA = true;
+
 type MenuDefinitionType = {
   label: string;
   page: string;
@@ -105,10 +107,10 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
   });
 
   return (
-    <div className="navbar bg-base-100">
+    <div className="navbar z-50 bg-base-100 lg:fixed">
       <div className="navbar-start">
         <div className="dropdown">
-          <label tabIndex={0} className="btn btn-ghost lg:hidden">
+          <label tabIndex={0} className="btn-ghost btn lg:hidden">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-5 w-5"
@@ -143,7 +145,7 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
       </div>
 
       <div className="navbar-end space-x-2">
-        <label className="swap swap-rotate">
+        <label className="swap-rotate swap">
           <input
             type="checkbox"
             onChange={(e) =>
@@ -172,7 +174,7 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
           <>
             {notifications.length ? (
               <div className="dropdown dropdown-end">
-                <label tabIndex={0} className="btn btn-ghost btn-circle">
+                <label tabIndex={0} className="btn-ghost btn-circle btn">
                   <div className="w-10 rounded-full">
                     {unread ? (
                       <div className="indicator ">
@@ -216,7 +218,7 @@ export default function Navbar({ theme, onChangeTheme }: NavbarProps) {
               <i className="bx bx-bell bx-md text-base-300" />
             )}{" "}
             <div className="dropdown dropdown-end">
-              <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
+              <label tabIndex={0} className="btn-ghost btn-circle avatar btn">
                 <div className="w-10 rounded-full">
                   <img
                     src={user.data?.profileImageUrl ?? "/images/dummy.jpg"}
@@ -306,10 +308,11 @@ const Menu = () => {
 
 const Logo = () => {
   return (
-    <div className="flex-1">
-      <Link href={"/videoach"} className="btn btn-ghost text-2xl capitalize">
+    <div className="flex flex-1 items-center">
+      <Link href={"/videoach"} className="btn-ghost btn text-2xl capitalize">
         Videoach
       </Link>
+      {BETA ? <span className="badge-warning badge">BETA</span> : null}
     </div>
   );
 };
